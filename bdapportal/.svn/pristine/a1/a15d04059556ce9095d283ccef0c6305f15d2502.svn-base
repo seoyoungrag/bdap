@@ -1,0 +1,56 @@
+package com.kt.bdapportal.repository;
+
+import java.sql.Timestamp;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.kt.bdapportal.domain.MgmtUserTblStat;
+
+@Repository("mgmtUserTblStatRepository")
+public interface MgmtUserTblStatRepository extends JpaRepository<MgmtUserTblStat, String>{
+
+	
+	@Query(value="SELECT sum(B.TBL_SIZE) AS TBL_SIZE, B.* FROM BDAP_TBL A, MGMT_USER_TBL_STAT B WHERE A.TBL_DB_NM=B.DB_NAME AND A.TBL_ENG_NM=B.TBL_NAME AND A.TBL_IS_MANAGED='N' LIMIT 0,1", nativeQuery = true)
+	public MgmtUserTblStat userAreaUsage(); 
+	
+	@Query(value="SELECT SUM(TBL_SIZE) FROM MGMT_USER_TBL_STAT WHERE OWNER_NAME=?1 GROUP BY DATE_FORMAT(INSERT_DT,'%Y%m%d') order by INSERT_DT limit 0,1", nativeQuery = true)
+	public Long usage(String userId);
+	
+	
+	@Query(value="SELECT A.USER_TBL_STAT_ID, SUM(A.TBL_SIZE) AS TBL_SIZE,A.INSERT_DT,A.DB_NAME,(select USER_NM FROM BDAP_USER C WHERE A.OWNER_NAME=C.USER_ID) AS TBL_NAME,A.TBL_TYPE,A.OWNER_NAME "
+			+ "FROM MGMT_USER_TBL_STAT A, MGMT_USER_TBL_STAT B "
+			+ "WHERE A.OWNER_NAME = B.OWNER_NAME "
+			+ "AND DATE_FORMAT(A.INSERT_DT,'%Y%m%d') = DATE_FORMAT(B.INSERT_DT,'%Y%m%d') "
+			+ "AND DATE_FORMAT(A.INSERT_DT,'%Y%m%d') between DATE_FORMAT(DATE_ADD(now() ,interval -3 day),'%Y%m%d')  and DATE_FORMAT(DATE_ADD(now(),interval -1 day),'%Y%m%d') "
+			+ "GROUP BY DATE_FORMAT(A.INSERT_DT,'%Y%m%d'),OWNER_NAME ORDER BY A.INSERT_DT DESC", nativeQuery = true)
+	public List<MgmtUserTblStat> userUsage();
+
+	@Query(value="SELECT "
+				+ "CURRENT_TIMESTAMP as INSERT_DT, "
+				+ "OWNER_NAME,(SELECT USER_NM FROM bdapportal.BDAP_USER C WHERE C.USER_ID=B.OWNER_NAME) as USER_TBL_STAT_ID, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(B.seleted_date,'%Y/%m/%d')) as TBL_TYPE, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(date_SUB(B.seleted_date, INTERVAL 1 DAY),'%Y/%m/%d')) as TBL_SIZE, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(date_SUB(B.seleted_date, INTERVAL 2 DAY),'%Y/%m/%d')) as DB_NAME, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(date_SUB(B.seleted_date, INTERVAL 3 DAY),'%Y/%m/%d')) as TBL_NAME "
+				+ "from "
+				+ "( "
+				+ "  select OWNER_NAME, STR_TO_DATE(?2,'%Y/%m/%d') as seleted_date from " 
+				+ "  bdapportal.MGMT_USER_TBL_STAT     "
+				+ "  WHERE DATE(INSERT_DT) BETWEEN STR_TO_DATE(?1,'%Y/%m/%d') and STR_TO_DATE(?2,'%Y/%m/%d') "
+				+ "  GROUP BY OWNER_NAME "
+				+ ") B ", nativeQuery = true)
+	public List<MgmtUserTblStat> userUsageSearch(String searchStartDate, String searchEndDate);
+	
+	
+	
+	
+	
+	
+	
+}

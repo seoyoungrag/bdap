@@ -1,0 +1,12 @@
+package com.kt.bdapportal.service;
+
+import java.util.List;
+
+import com.kt.bdapportal.domain.BdapRoleAcl;
+
+public interface BdapRoleAclService {
+	
+	public List<BdapRoleAcl> getBdapRoleAclList(String roleId);
+	List<BdapRoleAcl> updateRoleAcl(BdapRoleAcl bdapRoleAcl);
+	
+}

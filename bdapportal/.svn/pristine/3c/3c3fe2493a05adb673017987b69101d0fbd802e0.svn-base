@@ -1,0 +1,353 @@
+package com.kt.bdapportal.repository;
+
+import java.math.BigInteger;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import com.kt.bdapportal.common.util.BbsConstant;
+import com.kt.bdapportal.common.util.SearchVO;
+import com.kt.bdapportal.domain.BdapBbs;
+
+public class BbsRepositoryImpl implements BbsRepositoryCustom {
+	@PersistenceContext
+	private EntityManager entityManager;
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<BdapBbs> listBdapBbs(SearchVO searchVO, int startNum, int size) {
+			searchVO.setCategory(searchVO.nullTrim(searchVO.getCategory()));
+			searchVO.setCategorySub(searchVO.nullTrim(searchVO.getCategorySub()));
+			searchVO.setReferenceType(searchVO.nullTrim(searchVO.getReferenceType()));
+			searchVO.setEmergencyYn(searchVO.nullTrim(searchVO.getEmergencyYn()));
+			searchVO.setStartDate(searchVO.nullTrim(searchVO.getStartDate()));
+			searchVO.setSearchWord(searchVO.nullTrim(searchVO.getSearchWord()));
+			searchVO.setSearchType(searchVO.nullTrim(searchVO.getSearchType()));
+			
+			StringBuffer query = new StringBuffer();
+			
+			if(searchVO.getBoardType().equals(BbsConstant.QNA_CODE)){
+				query.append(" SELECT * FROM ("
+						+ "SELECT A.BBS_ID AS ORDER_ID, BBS_REG_DT AS ORDER_DT, A.*, D.QNA_STATUS "
+						+ "FROM BDAP_BBS A, BDAP_QNA D WHERE A.BBS_ID=D.BBS_ID "
+						+ "AND A.BBS_PARENT_BBS_ID  IS NULL AND A.BBS_TYPE = :boardType"
+						+ " UNION ALL "
+						+ "SELECT B.BBS_PARENT_BBS_ID AS ORDER_ID, LV1.BBS_REG_DT AS ORDER_DT, B.*, NULL AS 'QNA_STATUS' "
+						+ "FROM BDAP_BBS B, BDAP_BBS LV1 "
+						+ "WHERE B.BBS_PARENT_BBS_ID = LV1.BBS_ID "
+						+ "AND B.BBS_PARENT_BBS_ID  IS NOT NULL "
+						+ "AND B.BBS_TYPE = :boardType"
+								+ ") C WHERE BBS_DELETED_YN = 'N'  ");
+			}else{
+				query.append(" SELECT * FROM ("
+						+ "SELECT BBS_ID AS ORDER_ID, BBS_REG_DT AS ORDER_DT, A.* FROM BDAP_BBS A WHERE A.BBS_PARENT_BBS_ID  IS NULL AND A.BBS_TYPE = :boardType"
+						+ " UNION ALL "
+						+ "SELECT B.BBS_PARENT_BBS_ID AS ORDER_ID, LV1.BBS_REG_DT AS ORDER_DT, B.* "
+						+ "FROM BDAP_BBS B, BDAP_BBS LV1 "
+						+ "WHERE B.BBS_PARENT_BBS_ID = LV1.BBS_ID "
+						+ "AND B.BBS_PARENT_BBS_ID  IS NOT NULL "
+						+ "AND B.BBS_TYPE = :boardType"
+								+ ") C WHERE BBS_DELETED_YN = 'N' ");
+			}
+			
+		StringBuffer where = new StringBuffer();
+			
+		if(searchVO.getCategory().equals("") 
+				&& searchVO.getCategorySub().equals("") 
+				&& searchVO.getStartDate().equals("") 
+				&& searchVO.getSearchWord().equals("")
+				&& searchVO.getProcessStatus() == ' '
+				&& searchVO.getMinePostYN() == 'N'
+				&& searchVO.getEmergencyYn().equals("")
+				){
+		}else{
+			//공지사항검색
+			String category = searchVO.getCategory(); 
+			String categorySub = searchVO.getCategorySub();
+			String startDate = searchVO.getStartDate()+" 00:00:00";
+			String endDate = searchVO.getEndDate()+" 23:59:59";
+			String searchType = searchVO.getSearchType();
+			String searchWord = searchVO.getSearchWord();
+			String emergencyYn = searchVO.getEmergencyYn();
+			
+			//qna검색
+			char processStatus = searchVO.getProcessStatus();
+			//자료실1,2,3 검색
+			String referenceType = searchVO.getReferenceType();
+			
+			startDate = startDate.replaceAll("\\/", "-");
+			endDate = endDate.replaceAll("\\/", "-");
+			if(!category.equals("")){
+				where.append(" AND C.BBS_CATEGORY LIKE CONCAT('%',:category,'%')");
+			}
+			if(!categorySub.equals("")){
+				where.append(" AND C.BBS_CATEGORY_SUB LIKE CONCAT('%',:categorySub,'%')");
+			}
+			if(searchType.equals("TITLE") && !searchWord.equals("")){
+				where.append(" AND C.BBS_TITLE LIKE CONCAT('%',:searchWord,'%')");
+			}
+			if(searchType.equals("WRITER") && !searchWord.equals("")){
+				where.append(" AND C.BBS_WRITER_NM LIKE CONCAT('%',:searchWord,'%')");
+			}
+			if(!searchVO.getStartDate().equals("")){
+				where.append(" AND C.BBS_REG_DT BETWEEN :startDate AND :endDate");
+			}
+			//notice는 writer, qna는 wirternm으로 되어있음..
+			if(searchType.equals("WRITERNM") && !searchWord.equals("")){
+				where.append(" AND C.BBS_WRITER_NM LIKE CONCAT('%',:searchWord,'%')");
+			}
+			if(searchVO.getMinePostYN() == 'Y'){
+				where.append(" AND C.BBS_WRITER_ID LIKE CONCAT('%',:userId,'%')");
+			}
+			if(searchVO.getBoardType().equals(BbsConstant.QNA_CODE) && !Character.toString(processStatus).equals(" ")){
+				where.append(" AND C.QNA_STATUS LIKE CONCAT('%',:processStatus,'%')");
+			}
+			if(!referenceType.equals("")){
+				where.append(" AND C.BBS_CATEGORY_SUB LIKE CONCAT('%',:referenceType,'%')");
+			}
+			if(emergencyYn.equals("Y")){
+				where.append(" AND C.BBS_EMERGENCY_YN = 'Y'");
+			}
+		}
+		
+		query.append(where).append(" ORDER BY ORDER_DT DESC, ORDER_ID, BBS_REG_DT LIMIT :startNum,:size");
+			
+		
+		Query queryObj = entityManager.createNativeQuery(query.toString(),BdapBbs.class);
+		queryObj.setParameter("boardType", searchVO.getBoardType());
+		
+		if(searchVO.getCategory().equals("") 
+				&& searchVO.getCategorySub().equals("") 
+				&& searchVO.getStartDate().equals("") 
+				&& searchVO.getSearchWord().equals("")
+				&& searchVO.getProcessStatus() == ' '
+				&& searchVO.getMinePostYN() == 'N'
+				&& searchVO.getEmergencyYn().equals("")
+				){
+		}else{
+			//공지사항검색
+			String category = searchVO.getCategory(); 
+			String categorySub = searchVO.getCategorySub();
+			String startDate = searchVO.getStartDate()+" 00:00:00";
+			String endDate = searchVO.getEndDate()+" 23:59:59";
+			String searchType = searchVO.getSearchType();
+			String searchWord = searchVO.getSearchWord();
+			String emergencyYn = searchVO.getEmergencyYn();
+			String userId = searchVO.getUserId();
+			
+			//qna검색
+			char processStatus = searchVO.getProcessStatus();
+			//자료실1,2,3 검색
+			String referenceType = searchVO.getReferenceType();
+			
+			startDate = startDate.replaceAll("\\/", "-");
+			endDate = endDate.replaceAll("\\/", "-");
+			if(!category.equals("")){
+				queryObj.setParameter("category", category);
+			}
+			if(!categorySub.equals("")){
+				queryObj.setParameter("categorySub", categorySub);
+			}
+			if(searchType.equals("TITLE") && !searchWord.equals("")){
+				queryObj.setParameter("searchWord", searchWord);
+			}
+			if(searchType.equals("WRITER") && !searchWord.equals("")){
+				queryObj.setParameter("categorySub", categorySub);
+			}
+			if(!searchVO.getStartDate().equals("")){
+				queryObj.setParameter("startDate", startDate);
+				queryObj.setParameter("endDate", endDate);
+			}
+			//notice는 writer, qna는 wirternm으로 되어있음..
+			if(searchType.equals("WRITERNM") && !searchWord.equals("")){
+				queryObj.setParameter("searchWord", searchWord);
+			}
+			if(searchVO.getMinePostYN() == 'Y'){
+				queryObj.setParameter("userId", userId);
+			}
+			if(searchVO.getBoardType().equals(BbsConstant.QNA_CODE) && !Character.toString(processStatus).equals(" ")){
+				queryObj.setParameter("processStatus", processStatus);
+			}
+			if(!referenceType.equals("")){
+				queryObj.setParameter("referenceType", referenceType);
+			}
+			if(emergencyYn.equals("Y")){
+				where.append(" AND C.BBS_EMERGENCY_YN = 'Y'");
+			}
+		}
+		
+		queryObj.setParameter("startNum", startNum);
+		queryObj.setParameter("size", size);
+		
+		return queryObj.getResultList();
+	}
+
+	@Override
+	public Long countBdapBbs(SearchVO searchVO) {
+
+		searchVO.setCategory(searchVO.nullTrim(searchVO.getCategory()));
+		searchVO.setCategorySub(searchVO.nullTrim(searchVO.getCategorySub()));
+		searchVO.setReferenceType(searchVO.nullTrim(searchVO.getReferenceType()));
+		searchVO.setEmergencyYn(searchVO.nullTrim(searchVO.getEmergencyYn()));
+		searchVO.setStartDate(searchVO.nullTrim(searchVO.getStartDate()));
+		searchVO.setSearchWord(searchVO.nullTrim(searchVO.getSearchWord()));
+		
+		StringBuffer query = new StringBuffer();
+		
+		if(searchVO.getBoardType().equals(BbsConstant.QNA_CODE)){
+			query.append(" SELECT COUNT(*) FROM ("
+					+ "SELECT A.BBS_ID AS ORDER_ID, BBS_REG_DT AS ORDER_DT, A.*, D.QNA_STATUS "
+					+ "FROM BDAP_BBS A, BDAP_QNA D WHERE A.BBS_ID=D.BBS_ID "
+					+ "AND A.BBS_PARENT_BBS_ID  IS NULL AND A.BBS_TYPE = :boardType"
+					+ " UNION ALL "
+					+ "SELECT B.BBS_PARENT_BBS_ID AS ORDER_ID, LV1.BBS_REG_DT AS ORDER_DT, B.*, NULL AS 'QNA_STATUS' "
+					+ "FROM BDAP_BBS B, BDAP_BBS LV1 "
+					+ "WHERE B.BBS_PARENT_BBS_ID = LV1.BBS_ID "
+					+ "AND B.BBS_PARENT_BBS_ID  IS NOT NULL "
+					+ "AND B.BBS_TYPE = :boardType"
+							+ ") C WHERE 1=1 ");
+		}else{
+			query.append(" SELECT COUNT(*) FROM ("
+					+ "SELECT BBS_ID AS ORDER_ID, BBS_REG_DT AS ORDER_DT, A.* FROM BDAP_BBS A WHERE A.BBS_PARENT_BBS_ID  IS NULL AND A.BBS_TYPE = :boardType"
+					+ " UNION ALL "
+					+ "SELECT B.BBS_PARENT_BBS_ID AS ORDER_ID, LV1.BBS_REG_DT AS ORDER_DT, B.* "
+					+ "FROM BDAP_BBS B, BDAP_BBS LV1 "
+					+ "WHERE B.BBS_PARENT_BBS_ID = LV1.BBS_ID "
+					+ "AND B.BBS_PARENT_BBS_ID  IS NOT NULL "
+					+ "AND B.BBS_TYPE = :boardType"
+							+ ") C WHERE 1=1 ");
+		}
+		
+		StringBuffer where = new StringBuffer();
+		
+		if(searchVO.getCategory().equals("") 
+				&& searchVO.getCategorySub().equals("") 
+				&& searchVO.getStartDate().equals("") 
+				&& searchVO.getSearchWord().equals("")
+				&& searchVO.getProcessStatus() == ' '
+				&& searchVO.getMinePostYN() == 'N'
+				&& searchVO.getReferenceType().equals("")
+				&& searchVO.getEmergencyYn().equals("")
+				){
+		}else{
+			//공지사항검색
+			String category = searchVO.getCategory(); 
+			String categorySub = searchVO.getCategorySub();
+			String startDate = searchVO.getStartDate()+" 00:00:00";
+			String endDate = searchVO.getEndDate()+" 23:59:59";
+			String searchType = searchVO.getSearchType();
+			String searchWord = searchVO.getSearchWord();
+			String emergencyYn = searchVO.getEmergencyYn();
+			//qna검색
+			char processStatus = searchVO.getProcessStatus();
+			String userId = searchVO.getUserId();
+			//자료실1,2,3 검색
+			String referenceType = searchVO.getReferenceType();
+			
+			startDate = startDate.replaceAll("\\/", "-");
+			endDate = endDate.replaceAll("\\/", "-");
+			
+			if(!category.equals("")){
+				where.append(" AND C.BBS_CATEGORY LIKE CONCAT('%',:category,'%')");
+			}
+			if(!categorySub.equals("")){
+				where.append(" AND C.BBS_CATEGORY_SUB LIKE CONCAT('%',:categorySub,'%')");
+			}
+			if(searchType.equals("TITLE") && !searchWord.equals("")){
+				where.append(" AND C.BBS_TITLE LIKE CONCAT('%',:searchWord,'%')");
+			}
+			if(searchType.equals("WRITER") && !searchWord.equals("")){
+				where.append(" AND C.BBS_WRITER_NM LIKE CONCAT('%',:searchWord,'%')");
+			}
+			if(!searchVO.getStartDate().equals("")){
+				where.append(" AND C.BBS_REG_DT BETWEEN :startDate AND :endDate");
+			}
+			//notice는 writer, qna는 wirternm으로 되어있음..
+			if(searchType.equals("WRITERNM") && !searchWord.equals("")){
+				where.append(" AND C.BBS_WRITER_NM LIKE CONCAT('%',:searchWord,'%')");
+			}
+			if(searchVO.getMinePostYN() == 'Y'){
+				where.append(" AND C.BBS_WRITER_ID LIKE CONCAT('%',:userId,'%')");
+			}
+			if(searchVO.getBoardType().equals(BbsConstant.QNA_CODE) && !Character.toString(processStatus).equals(" ")){
+				where.append(" AND C.QNA_STATUS LIKE CONCAT('%',:processStatus,'%')");
+			}
+			if(!referenceType.equals("")){
+				where.append(" AND C.BBS_CATEGORY_SUB LIKE CONCAT('%',:referenceType,'%')");
+			}
+			if(emergencyYn.equals("Y")){
+				where.append(" AND C.BBS_EMERGENCY_YN = 'Y'");
+			}
+	}
+
+	Query queryObj = entityManager.createNativeQuery(query.toString());
+		
+	queryObj.setParameter("boardType", searchVO.getBoardType());
+	
+	if(searchVO.getCategory().equals("") 
+			&& searchVO.getCategorySub().equals("") 
+			&& searchVO.getStartDate().equals("") 
+			&& searchVO.getSearchWord().equals("")
+			&& searchVO.getProcessStatus() == ' '
+			&& searchVO.getMinePostYN() == 'N'
+			&& searchVO.getEmergencyYn().equals("")
+			){
+	}else{
+		//공지사항검색
+		String category = searchVO.getCategory(); 
+		String categorySub = searchVO.getCategorySub();
+		String startDate = searchVO.getStartDate()+" 00:00:00";
+		String endDate = searchVO.getEndDate()+" 23:59:59";
+		String searchType = searchVO.getSearchType();
+		String searchWord = searchVO.getSearchWord();
+		String emergencyYn = searchVO.getEmergencyYn();
+		String userId = searchVO.getUserId();
+		
+		//qna검색
+		char processStatus = searchVO.getProcessStatus();
+		//자료실1,2,3 검색
+		String referenceType = searchVO.getReferenceType();
+		
+		startDate = startDate.replaceAll("\\/", "-");
+		endDate = endDate.replaceAll("\\/", "-");
+		if(!category.equals("")){
+			queryObj.setParameter("category", category);
+		}
+		if(!categorySub.equals("")){
+			queryObj.setParameter("categorySub", categorySub);
+		}
+		if(searchType.equals("TITLE") && !searchWord.equals("")){
+			queryObj.setParameter("searchWord", searchWord);
+		}
+		if(searchType.equals("WRITER") && !searchWord.equals("")){
+			queryObj.setParameter("categorySub", categorySub);
+		}
+		if(!searchVO.getStartDate().equals("")){
+			queryObj.setParameter("startDate", startDate);
+			queryObj.setParameter("endDate", endDate);
+		}
+		//notice는 writer, qna는 wirternm으로 되어있음..
+		if(searchType.equals("WRITERNM") && !searchWord.equals("")){
+			queryObj.setParameter("searchWord", searchWord);
+		}
+		if(searchVO.getMinePostYN() == 'Y'){
+			queryObj.setParameter("userId", userId);
+		}
+		if(searchVO.getBoardType().equals(BbsConstant.QNA_CODE) && !Character.toString(processStatus).equals(" ")){
+			queryObj.setParameter("processStatus", processStatus);
+		}
+		if(!referenceType.equals("")){
+			queryObj.setParameter("referenceType", referenceType);
+		}
+		if(emergencyYn.equals("Y")){
+			where.append(" AND C.BBS_EMERGENCY_YN = 'Y'");
+		}
+	}
+	
+	BigInteger count =  (BigInteger)queryObj.getSingleResult();
+	return count.longValue();
+	}
+
+}

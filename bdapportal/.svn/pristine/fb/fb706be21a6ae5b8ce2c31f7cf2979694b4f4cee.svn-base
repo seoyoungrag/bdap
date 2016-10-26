@@ -1,0 +1,265 @@
+package com.kt.bdapportal.domain;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
+
+@Entity
+@Table(name = "BDAP_TBL")
+public class BdapTbl {
+
+	@Id
+	@Column(name = "TBL_ID", nullable = false)
+	@GeneratedValue(generator = "inquisitive-uuid")
+	@GenericGenerator(name = "inquisitive-uuid", strategy = "com.kt.bdapportal.common.util.CustomIdGenerator")
+	private String tblId;
+
+	@Column(name = "TBL_KOR_NM", nullable = true)
+	private String tblKorNm;
+
+	@Column(name = "TBL_ENG_NM", nullable = false)
+	private String tblEngNM;
+
+	@Column(name = "TBL_IS_CHK_NULL", nullable = false)
+	private char tblIsChkNull = 'N';
+
+	@Column(name = "TBL_IS_CHK_TYPE", nullable = false)
+	private char tblIsChkType = 'N';
+
+	@Column(name = "TBL_CREATE_DT", nullable = false)
+	private String tblCreateDt;
+
+	@Column(name = "TBL_VALIDATE_DATE", nullable = true)
+	private Date tblValidateDate;
+
+	@Column(name = "TBL_IS_MANAGED", nullable = false)
+	private char tblIsManaged = 'N';
+
+	@Column(name = "TBL_TYPE", nullable = true)
+	private String tblType;
+
+	@Column(name = "TBL_DB_NM", nullable = true)
+	private String tblDbNm;
+
+	@Column(name = "TBL_DESC", nullable = true)
+	private String tblDesc;
+
+	@Column(name = "TBL_RECENTLY_SYNC_DATE", nullable = false)
+	private Timestamp tblRecentlySyncDate;
+
+	@Column(name = "TBL_OWNER", nullable = true)
+	private String tblOwner;
+
+	@Column(name = "TBL_LOCATION", nullable = false)
+	private String tblLocation;
+
+	@Transient
+	String tblStackType = "2";
+
+	@OneToMany(fetch = FetchType.EAGER)
+	@JoinColumn(name = "COL_TBL_ID", insertable = false, updatable = false)
+	private List<BdapCol> child;
+
+	public BdapTbl() {
+		super();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		Calendar cal = Calendar.getInstance();
+		String today = "";
+		today = formatter.format(cal.getTime());
+		Timestamp ts = Timestamp.valueOf(today);
+		this.tblRecentlySyncDate = ts;
+	}
+
+	public BdapTbl(String tblId, String tblKorNm, String tblEngNM, char tblIsChkNull, char tblIsChkType,
+			String tblCreateDt, Date tblValidateDate, char tblIsManaged, String tblType, String tblDbNm, String tblDesc,
+			Timestamp tblRecentlySyncDate, String tblOwner, String tblLocation, List<BdapCol> child,
+			String tblStackType) {
+		super();
+		this.tblId = tblId;
+		this.tblKorNm = tblKorNm;
+		this.tblEngNM = tblEngNM;
+		this.tblIsChkNull = tblIsChkNull;
+		this.tblIsChkType = tblIsChkType;
+		this.tblCreateDt = tblCreateDt;
+		this.tblValidateDate = tblValidateDate;
+		this.tblIsManaged = tblIsManaged;
+		this.tblType = tblType;
+		this.tblDbNm = tblDbNm;
+		this.tblDesc = tblDesc;
+		this.tblRecentlySyncDate = tblRecentlySyncDate;
+		this.tblOwner = tblOwner;
+		this.tblLocation = tblLocation;
+		this.child = child;
+		this.tblStackType = tblStackType;
+
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		Calendar cal = Calendar.getInstance();
+		String today = "";
+		today = formatter.format(cal.getTime());
+		Timestamp ts = Timestamp.valueOf(today);
+		this.tblRecentlySyncDate = ts;
+	}
+
+	public List<BdapCol> getChild() {
+		return child;
+	}
+
+	public void setChild(List<BdapCol> child) {
+		this.child = child;
+	}
+
+	public String getTblId() {
+		return tblId;
+	}
+
+	public void setTblId(String tblId) {
+		this.tblId = tblId;
+	}
+
+	public String getTblKorNm() {
+		return tblKorNm;
+	}
+
+	public void setTblKorNm(String tblKorNm) {
+		this.tblKorNm = tblKorNm;
+	}
+
+	public String getTblEngNM() {
+		return tblEngNM;
+	}
+
+	public void setTblEngNM(String tblEngNM) {
+		this.tblEngNM = tblEngNM;
+	}
+
+	public char getTblIsChkNull() {
+		return tblIsChkNull;
+	}
+
+	public void setTblIsChkNull(char tblIsChkNull) {
+		this.tblIsChkNull = tblIsChkNull;
+	}
+
+	public char getTblIsChkType() {
+		return tblIsChkType;
+	}
+
+	public void setTblIsChkType(char tblIsChkType) {
+		this.tblIsChkType = tblIsChkType;
+	}
+
+	public String getTblCreateDt() {
+		return tblCreateDt;
+	}
+
+	public void setTblCreateDt(String tblCreateDt) {
+		this.tblCreateDt = tblCreateDt;
+	}
+
+	public Date getTblValidateDate() {
+		return tblValidateDate;
+	}
+
+	public void setTblValidateDate(Date tblValidateDate) {
+		this.tblValidateDate = tblValidateDate;
+	}
+
+	public char getTblIsManaged() {
+		return tblIsManaged;
+	}
+
+	public void setTblIsManaged(char tblIsManaged) {
+		this.tblIsManaged = tblIsManaged;
+	}
+
+	public String getTblType() {
+		return tblType;
+	}
+
+	public void setTblType(String tblType) {
+		this.tblType = tblType;
+	}
+
+	public String getTblDbNm() {
+		return tblDbNm;
+	}
+
+	public void setTblDbNm(String tblDbNm) {
+		this.tblDbNm = tblDbNm;
+	}
+
+	public String getTblDesc() {
+		return tblDesc;
+	}
+
+	public void setTblDesc(String tblDesc) {
+		this.tblDesc = tblDesc;
+	}
+
+	public Timestamp getTblRecentlySyncDate() {
+		return tblRecentlySyncDate;
+	}
+
+	public void setTblRecentlySyncDate(Timestamp tblRecentlySyncDate) {
+		this.tblRecentlySyncDate = tblRecentlySyncDate;
+	}
+
+	public String getTblOwner() {
+		return tblOwner;
+	}
+
+	public void setTblOwner(String tblOwner) {
+		this.tblOwner = tblOwner;
+	}
+
+	public String getTblLocation() {
+		return tblLocation;
+	}
+
+	public void setTblLocation(String tblLocation) {
+		this.tblLocation = tblLocation;
+	}
+
+	public String getTblStackType() {
+		return tblStackType;
+	}
+
+	public void setTblStackType(String tblStackType) {
+		this.tblStackType = tblStackType;
+	}
+
+	public BdapTbl(BdapTbl vo) {
+		super();
+		this.tblId = vo.tblId;
+		this.tblKorNm = vo.tblKorNm;
+		this.tblEngNM = vo.tblEngNM;
+		this.tblIsChkNull = vo.tblIsChkNull;
+		this.tblIsChkType = vo.tblIsChkType;
+		this.tblCreateDt = vo.tblCreateDt;
+		this.tblValidateDate = vo.tblValidateDate;
+		this.tblIsManaged = vo.tblIsManaged;
+		this.tblType = vo.tblType;
+		this.tblDbNm = vo.tblDbNm;
+		this.tblDesc = vo.tblDesc;
+		this.tblRecentlySyncDate = vo.tblRecentlySyncDate;
+		this.tblOwner = vo.tblOwner;
+		this.tblLocation = vo.tblLocation;
+		this.child = vo.child;
+		this.tblStackType = vo.tblStackType;
+	}
+
+}

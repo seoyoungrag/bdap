@@ -1,0 +1,87 @@
+package com.kt.bdapportal.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.kt.bdapportal.domain.MgmtTblStat;
+
+@Repository("mgmtTblStatRepository")
+public interface MgmtTblStatRepository extends JpaRepository<MgmtTblStat, String>{
+
+	
+	@Query(value="SELECT a.* FROM MGMT_TBL_STAT a, BDAP_DASHBOARD_TBL b WHERE a.DB_NAME=b.DASH_DB_NM and a.TBL_NAME=b.DASH_TBL_NM"
+			+ " and ETL_YMD"
+			+ " between DATE_ADD(now() ,interval -7 day)  and DATE_ADD(now(),interval -1 day) "
+			+ "order by a.ETL_YMD asc,b.DASH_NUM", nativeQuery = true)
+	public List<MgmtTblStat> getMgmtTblStat();
+		
+	
+	@Query(value="SELECT "
+			+ " '' as TBL_STAT_ID, '' as TBL_STAT_ID, '' as TBL_CNT, now() as ETL_YMD, '' as DB_NAME, '' as DB_ID, "
+			+ " '' as TBL_NAME, '' as TBL_ID, '' as TBL_TYPE, '' as PART_NAME, '' as SD_ID, '' as PARAM_KEY, "
+			+ " '' as DAY_OF_WEEK, CURRENT_TIMESTAMP as INSERT_DT, sum(B.tbl_size) as TBL_SIZE "
+			+ " FROM BDAP_TBL A, ( "
+			+ " select innerone.db_name as db_name, innerone.tbl_name as tbl_name, innerone.tbl_size as tbl_size "
+			+ " from MGMT_TBL_STAT innerone, (select "
+			+ " max(etl_ymd) as etl_ymd,db_name,tbl_name  "
+			+ " from MGMT_TBL_STAT "
+			+ " group by db_name, tbl_name) innertwo "
+			+ " where innerone.etl_ymd = innertwo.etl_ymd and innerone.db_name =innertwo.db_name and innerone.tbl_name = innertwo.tbl_name "
+			+ " ) B  "
+			+ " WHERE A.tbl_db_nm = B.db_name and A.TBL_ENG_NM=B.TBL_NAME  "
+			+ " AND A.TBL_IS_MANAGED='Y' ", nativeQuery = true)
+	public MgmtTblStat managedAreaUsage(); 
+
+	@Query(value="SELECT SUM(TBL_CNT) FROM MGMT_TBL_STAT", nativeQuery = true)
+	public Long dailyQueryLoadCount();
+		
+	
+	
+	@Query(value="SELECT * FROM MGMT_TBL_STAT GROUP BY DB_NAME ORDER BY DB_NAME ASC", nativeQuery = true)
+	public List<MgmtTblStat> mgmtTblDbList();
+	
+	@Query(value="SELECT * FROM MGMT_TBL_STAT WHERE DB_NAME=?1 AND ETL_YMD between DATE_ADD(now() ,interval -7 day)  and DATE_ADD(now(),interval -1 day) ORDER BY TBL_ID ASC, ETL_YMD DESC", nativeQuery = true)
+	public List<MgmtTblStat> mgmtTblLoadStatusList(String dbName);
+	
+	
+	@Query(value="SELECT * FROM MGMT_TBL_STAT WHERE DB_NAME=?1 AND ETL_YMD between STR_TO_DATE(?2,'%Y-%m-%d') and STR_TO_DATE(?3,'%Y-%m-%d') ORDER BY TBL_ID ASC, ETL_YMD DESC", nativeQuery = true)
+	public List<MgmtTblStat> mgmtTblLoadStatusListSearch(String dbName,java.util.Date searchStartDate,java.util.Date searchEndDate);
+	
+	@Query(value="SELECT TBL_STAT_ID,TBL_SIZE,GROUP_CONCAT(TBL_SIZE SEPARATOR ',') AS PARAM_KEY, TBL_CNT,ETL_YMD,INSERT_DT,DB_NAME,DB_ID,TBL_NAME,TBL_ID,TBL_TYPE,PART_NAME,SD_ID,DAY_OF_WEEK "
+			+ "FROM MGMT_TBL_STAT "
+			+ "where DB_NAME=?1  AND DATE_FORMAT(ETL_YMD,'%Y-%m-%d')=DATE_FORMAT(now(),'%Y-%m-%d') "
+			+ "OR DB_NAME=?1  AND DATE_FORMAT(ETL_YMD,'%Y-%m-%d')=DATE_FORMAT(DATE_ADD(now(),interval -1 day),'%Y-%m-%d') "
+			+ "OR DB_NAME=?1  AND DATE_FORMAT(ETL_YMD,'%Y-%m-%d')=DATE_FORMAT(DATE_ADD(now(),interval -7 day),'%Y-%m-%d') GROUP BY TBL_ID ORDER BY TBL_ID, ETL_YMD DESC", nativeQuery = true)
+	public List<MgmtTblStat> mgmtTblDailyLoadStatusList(String dbName);
+	
+	@Query(value="SELECT TBL_STAT_ID,TBL_SIZE,GROUP_CONCAT(TBL_SIZE SEPARATOR ',') AS PARAM_KEY, TBL_CNT,ETL_YMD,INSERT_DT,DB_NAME,DB_ID,TBL_NAME,TBL_ID,TBL_TYPE,PART_NAME,SD_ID,DAY_OF_WEEK "
+			+ "FROM MGMT_TBL_STAT "
+			+ "where DB_NAME=?1  AND DATE_FORMAT(ETL_YMD,'%Y-%m-%d')=str_to_date(?2,'%Y-%m-%d') "
+			+ "OR DB_NAME=?1  AND DATE_FORMAT(ETL_YMD,'%Y-%m-%d')=DATE_ADD(str_to_date(?2,'%Y-%m-%d'),interval -1 day) "
+			+ "OR DB_NAME=?1  AND DATE_FORMAT(ETL_YMD,'%Y-%m-%d')=DATE_ADD(str_to_date(?2,'%Y-%m-%d'),interval -7 day) GROUP BY TBL_ID ORDER BY TBL_ID, ETL_YMD DESC", nativeQuery = true)
+	public List<MgmtTblStat> mgmtTblDailyLoadStatusListSearch(String dbName,java.util.Date searchStartDate);
+	
+	
+	@Query(value="SELECT SUM(A.TBL_SIZE) AS TBL_SIZE, A.TBL_STAT_ID , A.TBL_CNT,A.ETL_YMD,A.INSERT_DT,A.DB_NAME,A.DB_ID,A.TBL_NAME,A.TBL_ID,A.TBL_TYPE,A.PART_NAME,A.SD_ID,A.PARAM_KEY,A.DAY_OF_WEEK	"
+			+ "FROM MGMT_TBL_STAT A,MGMT_TBL_STAT B	"
+			+ "WHERE A.DB_NAME=?1	AND A.TBL_ID = B.TBL_ID	AND A.ETL_YMD BETWEEN DATE_ADD(now(),interval -30 day) and DATE_ADD(now(),interval -1 day) GROUP BY A.TBL_ID", nativeQuery = true)
+	public List<MgmtTblStat> mgmtTblMonthAvgStatusList(String dbName);
+	
+	
+	@Query(value="SELECT SUM(A.TBL_SIZE) AS TBL_SIZE, A.TBL_STAT_ID , A.TBL_CNT,A.ETL_YMD,A.INSERT_DT,A.DB_NAME,A.DB_ID,A.TBL_NAME,A.TBL_ID,A.TBL_TYPE,A.PART_NAME,A.SD_ID,A.PARAM_KEY,A.DAY_OF_WEEK	"
+			+ "FROM MGMT_TBL_STAT A,MGMT_TBL_STAT B	"
+			+ "WHERE A.DB_NAME=?1	AND A.TBL_ID = B.TBL_ID	AND A.ETL_YMD BETWEEN DATE_ADD(?2,interval -30 day) and DATE_ADD(?2,interval -1 day) GROUP BY A.TBL_ID", nativeQuery = true)
+	public List<MgmtTblStat> mgmtTblMonthAvgStatusListSearch(String dbName,java.util.Date searchStartDate);
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}

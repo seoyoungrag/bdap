@@ -1,0 +1,29 @@
+{
+	"table": {
+		"tablename": "test123",
+		"dbName": "admin",
+		"owner": "admin",
+		"createTime": 1469523007,
+		"lastAcessTime": 0,
+		"retention": 0,
+		"sd": {
+			"cols": [{
+				"name": "a",
+				"type": "int"
+			}],
+			"location": "hdfs://jake.dev.org:8080/user/hivewarehouse/admin.db/test123",
+			"inputFormat": "org.apache.hadoop.mapred.TextInputFormat",
+			"outputFormat": "output",
+			"compressed": false,
+			"numBuckets": -1,
+			"serdeInfo": {
+				"SerializationLib": "asdf",
+				"parameters": {
+					"serlialization.format": "1"
+				}
+			}
+		},
+		"tableType": "MANAGED_TABLE"
+	},
+	"status": true
+}

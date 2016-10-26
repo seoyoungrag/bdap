@@ -1,0 +1,133 @@
+package com.kt.bdapportal.domain;
+
+import java.sql.Timestamp;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+
+
+@Entity
+@Table(name = "BDAP_BBS_CATEGORY")
+public class BdapBbsCategory {
+
+	
+	 @Id
+	 @Column(name = "CATE_ID")
+	 @GeneratedValue(generator = "inquisitive-uuid")
+	 @GenericGenerator(name = "inquisitive-uuid", strategy = "com.kt.bdapportal.common.util.CustomIdGenerator")
+	 private String cateId;
+	 
+	 @Column(name="CATE_BBS_TYPE", nullable=true)
+	 private String cateBbsType;
+	 
+	 @Column(name="CATE_NAME", nullable=true)
+	 private String cateName;
+	 
+	 @Column(name="CATE_PARENT_CATE_ID", nullable=true)
+	 private String cateParentCateId;
+	 
+	 @Column(name="CATE_RESPONSER_NAME", nullable=true)
+	 private String cateResponserName;
+	 
+	
+	 @Column(name="CATE_RESPONSER_EMAIL", nullable=true)
+	 private String cateResponserEmail;
+
+
+	public String getCateId() {
+		return cateId;
+	}
+
+
+	public void setCateId(String cateId) {
+		this.cateId = cateId;
+	}
+
+
+	public String getCateBbsType() {
+		return cateBbsType;
+	}
+
+
+	public void setCateBbsType(String cateBbsType) {
+		this.cateBbsType = cateBbsType;
+	}
+
+
+	public String getCateName() {
+		return cateName;
+	}
+
+
+	public void setCateName(String cateName) {
+		this.cateName = cateName;
+	}
+
+
+	public String getCateParentCateId() {
+		return cateParentCateId;
+	}
+
+
+	public void setCateParentCateId(String cateParentCateId) {
+		this.cateParentCateId = cateParentCateId;
+	}
+
+
+	public String getCateResponserName() {
+		return cateResponserName;
+	}
+
+
+	public void setCateResponserName(String cateResponserName) {
+		this.cateResponserName = cateResponserName;
+	}
+
+
+	public String getCateResponserEmail() {
+		return cateResponserEmail;
+	}
+
+
+	public void setCateResponserEmail(String cateResponserEmail) {
+		this.cateResponserEmail = cateResponserEmail;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}

@@ -1,0 +1,22 @@
+package com.kt.bdapportal.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.kt.bdapportal.domain.BdapCryptoCol;
+import com.kt.bdapportal.repository.BdapCryptoColRepository;
+import com.kt.bdapportal.service.BdapCryptoColService;
+
+@Service("bdapCryptoColService")
+public class BdapCryptoColServiceImpl implements BdapCryptoColService{
+
+	@Autowired
+	private BdapCryptoColRepository bdapCryptoColRepository;
+	
+	public BdapCryptoCol encDecInsert(BdapCryptoCol bdapCryptoCol){
+		BdapCryptoCol resultBdapCryptoCol = bdapCryptoColRepository.save(bdapCryptoCol);		
+		bdapCryptoColRepository.flush();
+		return resultBdapCryptoCol;
+	}
+	
+}

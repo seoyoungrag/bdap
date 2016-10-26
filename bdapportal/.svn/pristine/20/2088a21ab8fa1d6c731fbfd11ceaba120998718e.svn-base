@@ -1,0 +1,90 @@
+#hiveMeta connection info
+hiveMeta.jdbc.driver=com.mysql.jdbc.Driver
+#hiveMeta.jdbc.url=jdbc:mysql://121.139.99.123:3306/bdapportal
+hiveMeta.jdbc.url=jdbc:mysql://127.0.0.1:3306/bdapportal
+hiveMeta.jdbc.user=bdapuser
+hiveMeta.jdbc.password=bdappass
+
+
+#bdap connection info
+bdap.jdbc.driver=com.mysql.jdbc.Driver
+#bdap.jdbc.url=jdbc:mysql://121.139.99.123:3306/bdapportal
+bdap.jdbc.url=jdbc:mysql://127.0.0.1:3306/bdapportal
+bdap.jdbc.user=bdapuser
+bdap.jdbc.password=bdappass
+
+#ndap url
+ndap.management.host=192.168.50.170:8080
+#hdfs url
+hdfs.host=192.168.50.171:8088
+hdfs.user=hdfs
+
+#hive rest api url
+rest.api.to.database.job.api.authenticate=http://{0}/api/authenticate
+rest.api.to.database.job.api.qryNorHist=http://{0}/api/query/history?startedFrom={1}&startedTo{2}
+rest.api.to.database.job.api.qryNorHistAll=http://{0}/api/query/history
+rest.api.to.database.job.api.qryDecHist=http://{0}/api/decryptionHistory?fromDate={1}&untilDate={2}
+rest.api.to.database.job.api.qryDecHistAll=http://{0}/api/decryptionHistory
+rest.api.to.database.job.api.qryChain=http://{0}/api/querychain?query={1}&database={2}
+rest.api.to.database.job.api.qryInfo=http://{0}/api/query/{1}
+rest.api.to.database.job.api.cluster=http://{0}/api/license
+rest.api.to.database.job.api.querychain=http://{0}/api/querychain
+rest.api.to.database.job.api.computing=http://{0}/ws/v1/cluster/metrics
+
+rest.api.to.database.job.api.databaseList=http://{0}/api/database/
+rest.api.to.database.job.api.tableList=http://{0}/api/database/{1}/table
+rest.api.to.database.job.api.tableInfo=http://{0}/api/database/{1}/table/{2}
+
+rest.api.to.database.job.api.workflowAll=http://{0}/api/workflow
+rest.api.to.database.job.api.workflowAllCount=http://{0}/api/workflow?op=count
+rest.api.to.database.job.api.workflowEachCount=http://{0}/api/workflow?op=count&userId={1}
+
+rest.api.to.database.job.api.encTable=http://{0}/api/database/{1}/table?op=encrypt
+
+rest.api.to.database.job.api.userInfo=http://{0}/api/user/{1}
+
+rest.api.to.database.job.api.userList=http://{0}/api/user
+
+rest.api.to.database.job.api.roleList=http://{0}/api/role
+
+rest.api.to.database.job.api.roleInfo=http://{0}/api/role/{1}
+
+
+#ndap rest api authenticate info
+rest.api.to.database.job.api.appKey=KHcFRtIUSFQ5WYKwEK58Hm1oHHAvtoJiJ0s8oEzw9Yk
+rest.api.to.database.job.api.appId.workbench=bdapportal
+rest.api.to.database.job.api.appPw.workbench=bdapportal
+
+rest.api.to.database.job.api.appId=admin
+rest.api.to.database.job.api.appPw=1qaz@WSX
+
+
+#ndap - regex check
+ndap.tblchk.percent=1
+ndap.tblchk.maxCnt=100000
+
+#########not using#########
+
+#user table list
+hadoop.user.dbList = bdc_1,bdc_2,bdc_3,bdc_4,bdc_5,bdc_om
+
+#sycros connection info
+sycros.jdbc.driver=com.mysql.jdbc.Driver
+#sycros.jdbc.url=jdbc:mysql://121.139.99.123:3306/bdapportal
+sycros.jdbc.url=jdbc:mysql://127.0.0.1:3306/bdapportal
+sycros.jdbc.user=bdapuser
+sycros.jdbc.password=bdappass
+
+# Placeholders batch.*
+#    for HSQLDB:
+batch.jdbc.driver=org.hsqldb.jdbcDriver
+batch.jdbc.url=jdbc:hsqldb:mem:testdb;sql.enforce_strict_size=true
+# use this one for a separate server process so you can inspect the results
+# (or add it to system properties with -D to override at run time).
+# batch.jdbc.url=jdbc:hsqldb:hsql://localhost:9005/samples
+batch.jdbc.user=sa
+batch.jdbc.password=
+batch.schema=
+batch.schema.script=classpath:/org/springframework/batch/core/schema-mysql.sql
+
+##########################

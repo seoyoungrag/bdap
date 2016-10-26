@@ -1,0 +1,185 @@
+package com.kt.bdapportal.common.util;
+
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.Properties;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.kt.bdapportal.common.util.auth.NdapAuthentication;
+import com.kt.bdapportal.common.util.auth.NdapUser;
+
+import net.sf.json.JSONException;
+
+public class NdapApiWrapper {
+    private static NdapApiWrapper ndapApiPublicWrapper;
+    private static NdapApiWrapper ndapApiPrivateWrapper;
+    
+    String ndapDomain = "ndap.management.host";
+    String workflowAllCountUrl = "rest.api.to.database.job.api.workflowAllCount";
+    String workflowEachCountUrl = "rest.api.to.database.job.api.workflowEachCount";
+	String apiUserInfoUrl = "rest.api.to.database.job.api.userInfo";
+    
+    String publicAuthKey = "";
+    String privateAuthKey = "";
+
+    RestTemplate restTemplate;
+
+    HttpHeaders headers;
+    
+	//공통 api 호출(admin 권한)
+	public NdapApiWrapper() {
+		Properties props = new Properties();
+		try{
+			props.load(NdapAuthentication.class.getClassLoader().getResourceAsStream("/ndap.properties"));
+        }
+        catch(Exception e){
+            //System.out.println("Authentication properties get error: " + e);
+        }
+        if(props != null){
+        	ndapDomain = props.getProperty(ndapDomain);
+        	workflowAllCountUrl = props.getProperty(workflowAllCountUrl);
+        	workflowEachCountUrl = props.getProperty(workflowEachCountUrl);
+        	apiUserInfoUrl = props.getProperty(apiUserInfoUrl);
+        }
+        restTemplate = new RestTemplate();
+	    headers = new HttpHeaders();
+        publicAuthKey = NdapAuthentication.getPublicAuthInstance().getAuthKey();
+        headers.add("Authentication", publicAuthKey);
+        headers.add("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
+	}
+	
+	//권한 api 호출 (암호화)
+	public NdapApiWrapper(HttpServletRequest request) {
+		this();
+        privateAuthKey = NdapAuthentication.getPrivateAuthInstance(request).getAuthKey();
+	    headers = new HttpHeaders();
+        publicAuthKey = NdapAuthentication.getPublicAuthInstance().getAuthKey();
+        headers.add("Authentication", privateAuthKey);
+        headers.add("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
+	}
+	
+	
+    public static synchronized NdapApiWrapper getPublicInstance() {
+        if (ndapApiPublicWrapper == null)
+        	ndapApiPublicWrapper = new NdapApiWrapper();
+        return ndapApiPublicWrapper;        
+    }
+
+    public static synchronized NdapApiWrapper getPrivateInstance(HttpServletRequest request) {
+        if (ndapApiPrivateWrapper == null)
+        	ndapApiPrivateWrapper = new NdapApiWrapper(request);
+        return ndapApiPrivateWrapper;        
+    }
+    
+    
+
+	public NdapUser userInfo(String userId) throws IOException{
+		HttpEntity<String> httpEntity = new HttpEntity<String>(null, headers);
+		String formattedAuthApiUrl = MessageFormat.format(apiUserInfoUrl, ndapDomain, userId);
+		NdapUser userInfo = new NdapUser();
+		String responseString = "";
+		
+		try {
+		
+		ResponseEntity<NdapUser> responseEntity = restTemplate.exchange(
+				formattedAuthApiUrl, 
+				HttpMethod.GET, 
+				httpEntity, 
+				NdapUser.class
+				);
+		if (responseEntity.getStatusCode() == HttpStatus.OK) {
+			userInfo = responseEntity.getBody();
+			responseString = userInfo.toString();
+		}else{
+			//System.out.println("connection error: "+responseEntity.getStatusCode());
+		} 
+		} catch (HttpClientErrorException e) {
+			responseString += "client err: ";
+			responseString += e.getStatusCode();
+			responseString += e.getResponseBodyAsString();
+		} catch (HttpServerErrorException e) {
+			responseString += "server err: ";
+			responseString += e.getStatusCode();
+			responseString += e.getResponseBodyAsString();
+		}
+		return userInfo;
+	}
+	
+
+	public String workflowAllCount() throws IOException, JSONException{
+		HttpEntity<String> httpEntity = new HttpEntity<String>(null, headers);
+		
+		String formattedAuthApiUrl = MessageFormat.format(workflowAllCountUrl, ndapDomain);
+
+		String responseString = "";
+		
+		try {
+		
+		ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(
+				formattedAuthApiUrl, 
+				HttpMethod.GET, 
+				httpEntity, 
+				 new ParameterizedTypeReference<JsonNode>(){}
+				);
+		if (responseEntity.getStatusCode() == HttpStatus.OK) {
+			JsonNode body = responseEntity.getBody();
+		    responseString = body.get("value").asText();
+		}else{
+			//System.out.println("connection error: "+responseEntity.getStatusCode());
+		} 
+		} catch (HttpClientErrorException e) {
+			responseString += "client err: ";
+			responseString += e.getStatusCode();
+			responseString += e.getResponseBodyAsString();
+		} catch (HttpServerErrorException e) {
+			responseString += "server err: ";
+			responseString += e.getStatusCode();
+			responseString += e.getResponseBodyAsString();
+		}
+		return responseString;
+	}
+
+	public String workflowEachCount(int userId) throws IOException, JSONException{
+		HttpEntity<String> httpEntity = new HttpEntity<String>(null, headers);
+		String formattedAuthApiUrl = MessageFormat.format(workflowEachCountUrl, ndapDomain, userId);
+				
+		String responseString = "";
+		
+		try {
+		
+		ResponseEntity<JsonNode> responseEntity = restTemplate.exchange(
+				formattedAuthApiUrl, 
+				HttpMethod.GET, 
+				httpEntity, 
+				 new ParameterizedTypeReference<JsonNode>(){}
+				);
+		if (responseEntity.getStatusCode() == HttpStatus.OK) {
+			JsonNode body = responseEntity.getBody();
+		    responseString = body.get("value").asText();
+		}else{
+			//System.out.println("connection error: "+responseEntity.getStatusCode());
+		} 
+		} catch (HttpClientErrorException e) {
+			responseString += e.getStatusCode();
+			responseString += e.getResponseBodyAsString();
+		} catch (HttpServerErrorException e) {
+			responseString += e.getStatusCode();
+			responseString += e.getResponseBodyAsString();
+		}
+		return responseString;
+	}
+	
+}

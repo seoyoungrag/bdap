@@ -1,0 +1,154 @@
+package com.kt.bdapportal.common.util.auth;
+
+import java.text.MessageFormat;
+import java.util.Properties;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.json.simple.JSONObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+import net.sf.json.JSONException;
+
+
+public class NdapAuthentication {
+
+    private static NdapAuthentication adminAuthentication;
+    private static NdapAuthentication privateAuthentication;
+    
+    private String ndapDomain = "ndap.management.host";
+    private String apiAuthUrl = "rest.api.to.database.job.api.authenticate";
+    private String apiAppKey = "rest.api.to.database.job.api.appKey";
+    private String apiPass = "rest.api.to.database.job.api.appPw";
+	private String apiId = "rest.api.to.database.job.api.appId";
+    
+    private String authKey;
+    
+    private RestTemplate restTemplate;
+    private HttpHeaders headers;
+    
+	private void initialize(){
+		Properties props = new Properties();
+		try{
+			props.load(NdapAuthentication.class.getClassLoader().getResourceAsStream("/ndap.properties"));
+        }
+        catch(Exception e){
+        	e.printStackTrace();
+        }
+        if(props != null){
+        	ndapDomain = props.getProperty(ndapDomain);
+        	apiAuthUrl = props.getProperty(apiAuthUrl);
+        	apiAppKey = props.getProperty(apiAppKey);
+        	apiPass = props.getProperty(apiPass);
+        	apiId = props.getProperty(apiId);
+        }
+        restTemplate = new RestTemplate();
+	    headers = new HttpHeaders();
+        headers.add("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
+    	
+    };
+    
+	public NdapAuthentication() {
+		initialize();
+		JSONObject requestJson = new JSONObject();
+		try {
+			requestJson.put("applicationKey", apiAppKey);
+			requestJson.put("password", apiPass);
+			requestJson.put("userName", apiId);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		HttpEntity<String> httpEntity = new HttpEntity<String>(requestJson.toString(), headers);
+		
+		String formattedAuthApiUrl = MessageFormat.format(apiAuthUrl, ndapDomain);
+		
+		ResponseEntity<NdapLoginToken> response = restTemplate.exchange(
+				formattedAuthApiUrl, 
+				HttpMethod.POST, 
+				httpEntity, 
+				NdapLoginToken.class
+				);
+		
+		if (response.getStatusCode() == HttpStatus.OK) {
+			NdapLoginToken token = (NdapLoginToken) response.getBody();
+			this.authKey = token.getLoginToken();
+		}else{
+			//System.out.println("connection error: "+response.getStatusCode());
+		} 
+		
+	}
+
+	public NdapAuthentication(HttpServletRequest request) {
+		/*initialize();
+		HttpSession session = request.getSession();
+		authKey = session.getAttribute("LOGIN_TOKEN") ==null? "":(String) session.getAttribute("LOGIN_TOKEN");
+		if(authKey.equals("")){
+			// 현재 클래스에서 리퀘스트 파라미터명을 알아야 할 필요가 있나? 메서드의 파라미터를 request로 해버려서 인증 클래스와 로그인 클래스, 로그인 jsp사이에 의존성이 발생해버렸다. 
+			// 현재 클래스는 그냥 스트링 파라미터 두개를 받는게 좋아보인다.
+			apiId = request.getParameter("loginId")==null?"":(String) request.getParameter("loginId");
+			apiPass = request.getParameter("loginPassword")==null?"":(String) request.getParameter("loginPassword");
+	        
+			JSONObject requestJson = new JSONObject();
+			try {
+				requestJson.put("applicationKey", apiAppKey);
+				requestJson.put("password", apiPass);
+				requestJson.put("userName", apiId);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			HttpEntity<String> httpEntity = new HttpEntity<String>(requestJson.toString(), headers);
+			
+			String formattedAuthApiUrl = MessageFormat.format(apiAuthUrl, ndapDomain);
+			
+			ResponseEntity<NdapLoginToken> response = restTemplate.exchange(
+					formattedAuthApiUrl, 
+					HttpMethod.POST, 
+					httpEntity, 
+					NdapLoginToken.class
+					);
+			
+			if (response.getStatusCode() == HttpStatus.OK) {
+				NdapLoginToken token = (NdapLoginToken) response.getBody();
+				this.authKey = token.getLoginToken();
+			}else{
+				//System.out.println("connection error: "+response.getStatusCode());
+			} 
+		}*/
+		
+		this.authKey = "temptoken";
+	}
+
+	//공통기능용 ndap.properties의 admin id/pw 이용 ... ndap 인증한다.
+    public static  NdapAuthentication getPublicAuthInstance() {
+    	synchronized(adminAuthentication){
+    		if (adminAuthentication == null){
+        		adminAuthentication = new NdapAuthentication();
+            }	
+    	}
+    	
+        return adminAuthentication;        
+    }
+    
+    // 로그인용 request의 id/pw 이용 ... ndap 인증한다.
+    // pmd said : synchronized 는 메서드에 쓰지 말고 블락안에 쓰라고 한다.
+    public static NdapAuthentication getPrivateAuthInstance(HttpServletRequest request) {
+    	synchronized(privateAuthentication){
+    		if (privateAuthentication == null){
+            	privateAuthentication = new NdapAuthentication(request);
+            }
+    	}
+    	
+        return privateAuthentication;        
+    }
+    
+    public String getAuthKey() {
+		return authKey;
+	}
+}

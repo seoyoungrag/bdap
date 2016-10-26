@@ -1,0 +1,135 @@
+package com.kt.bdapportal.service.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.kt.bdapportal.common.util.SearchVO;
+import com.kt.bdapportal.domain.BdapTbl;
+import com.kt.bdapportal.repository.TblRepository;
+import com.kt.bdapportal.service.TblService;
+
+@Service("tblService")
+public class TblServiceImpl implements TblService {
+
+	@Autowired
+	private TblRepository tblRepository;
+
+	public List<BdapTbl> getExpirationDateNearTable(String userId) {
+
+		List<BdapTbl> bdapTbl = tblRepository.expirationDateNearTable(userId);
+
+		return bdapTbl;
+	}
+
+	public BdapTbl getSchema(SearchVO searchVO, String tblId, int startNum, int rows) {
+
+		BdapTbl bdapTbl = new BdapTbl();
+		bdapTbl = tblRepository.schema(tblId,startNum,rows);
+		
+		return bdapTbl;
+	}
+
+	public List<BdapTbl> getSchemaList(SearchVO searchVO, int startNum, int rows) {
+
+		List<BdapTbl> bdapTbl = new ArrayList<BdapTbl>();
+		bdapTbl = tblRepository.schemaList(searchVO.getUserId(), startNum, rows);
+
+		return bdapTbl;
+	}
+
+	public Long getSchemaCount(String userId) {
+
+		Long count = tblRepository.schemaCount(userId);
+
+		return count;
+	}
+
+	public List<BdapTbl> getTblTree() {
+		List<BdapTbl> bdapTbl = new ArrayList<BdapTbl>();
+		bdapTbl = tblRepository.tblTree();
+
+		return bdapTbl;
+	}
+
+	public BdapTbl getSchemaByTblNm(String userId, SearchVO searchVo, int startNum, int rows) {
+
+		BdapTbl bdapTbl = new BdapTbl();
+
+		if (searchVo.getSearchType().equals("tblKorNm")) {
+			bdapTbl = tblRepository.schemaByTblKorNm(userId, searchVo.getSearchWord());
+		} else if (searchVo.getSearchType().equals("tblEngNm")) {
+			bdapTbl = tblRepository.schemaByTblEngNm(userId, searchVo.getSearchWord());
+		}
+
+		return bdapTbl;
+	}
+
+	public List<BdapTbl> getTableList(String schema) {
+
+		List<BdapTbl> bdapTbl = new ArrayList<BdapTbl>();
+
+		bdapTbl = tblRepository.tblList(schema);
+
+		return bdapTbl;
+
+	}
+
+	public List<BdapTbl> getUserTableList(String userId, String schema) {
+
+		List<BdapTbl> bdapTbl = new ArrayList<BdapTbl>();
+		bdapTbl = tblRepository.userTblList(userId, schema);
+		return bdapTbl;
+	}
+
+	public BdapTbl getBdapTblByTblId(String tblId) {
+
+		BdapTbl bdapTbl = tblRepository.findByTblId(tblId);
+		return bdapTbl;
+	}
+
+	public BdapTbl updateValidateDate(BdapTbl bdapTbl) {
+		BdapTbl resultBdapTbl = tblRepository.save(bdapTbl);
+		tblRepository.flush();
+		return resultBdapTbl;
+	}
+
+	@Override
+	public List<String> getDistinctSchemaNmList() {
+		List<String> dbNms = tblRepository.findDistinctByTblDbNm();
+		return dbNms;
+	}
+
+	@Override
+	public List<BdapTbl> getSchemaWithTblList(SearchVO searchVO) {
+		BdapTbl searchTbl = new BdapTbl();
+		if (!searchVO.getSchemaNm().equals("")) {
+			searchTbl.setTblDbNm(searchVO.getSchemaNm());
+		}
+		if (!searchVO.getTblNm().equals("")) {
+			searchTbl.setTblEngNM(searchVO.getTblNm());
+		}
+		List<BdapTbl> tblList = tblRepository.getBdapTbl(searchTbl);
+		return tblList;
+	}
+
+	@Override
+	public BdapTbl updateCellUserInfo(String id, String cellName, String cellValue) {
+		BdapTbl bdapTbl = tblRepository.findByTblId(id);
+		cellValue = cellValue.toLowerCase();
+		if (cellName.equals("tblKorNm")) {
+			bdapTbl.setTblKorNm(cellValue);
+		} else if (cellName.equals("isManaged")) {
+			bdapTbl.setTblIsManaged(cellValue.charAt(0));
+		} else if (cellName.equals("isCheckNull")) {
+			bdapTbl.setTblIsChkNull(cellValue.charAt(0));
+		} else if (cellName.equals("isCehckRegex")) {
+			bdapTbl.setTblIsChkType(cellValue.charAt(0));
+		}
+		return tblRepository.saveAndFlush(bdapTbl);
+
+	}
+
+}
