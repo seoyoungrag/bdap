@@ -2,6 +2,7 @@ package com.kt.bdapportal.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,16 +68,53 @@ public class MgmtQryHistServiceImpl implements MgmtQryHistService{
 		return count;
 	}
 	
-	public List<MgmtQryHist> getQueryUsageList(SearchVO searchVO){
-		List<MgmtQryHist> mgmtQryHistList = new ArrayList<MgmtQryHist>();
+	public List<Map<String,String>> getQueryUsageList(SearchVO searchVO){
+		List<Map<String,String>> queryUsageStat = new ArrayList<Map<String,String>>();
 		try{
 			// 날짜가 지정되지 않는 경우는 없다. 반드시 시작일은 존재한다.
-			String startDate = searchVO.getStartDate();
-			String endDate = searchVO.getEndDate();
-			mgmtQryHistList = mgmtQryHistRepository.queryUsageStatistics(startDate,endDate);
+			//String startDate = searchVO.getStartDate();
+			//String endDate = searchVO.getEndDate();
+			queryUsageStat = mgmtQryHistRepository.queryUsageStatistics(searchVO);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		return mgmtQryHistList;
+		return queryUsageStat;
+	}
+
+	@Override
+	public Long getAccumulateQueryCountAll() {
+		Long count = mgmtQryHistRepository.countAccumulateQuery();
+		return count;
+	}
+
+	@Override
+	public Long getWeekQueryCountAll() {
+		Long count = mgmtQryHistRepository.countWeekQuery();
+		return count;
+	}
+
+	@Override
+	public Long getQueryUsageListCount() {
+		Long mgmtQryHistListCount = 0L;
+		try{
+			mgmtQryHistListCount = mgmtQryHistRepository.queryUsageStatisticsCount();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return mgmtQryHistListCount;
+	}
+
+	@Override
+	public List<Map<String, String>> getQueryUsageListAll(SearchVO searchVO) {
+		List<Map<String,String>> queryUsageStat = new ArrayList<Map<String,String>>();
+		try{
+			// 날짜가 지정되지 않는 경우는 없다. 반드시 시작일은 존재한다.
+			//String startDate = searchVO.getStartDate();
+			//String endDate = searchVO.getEndDate();
+			queryUsageStat = mgmtQryHistRepository.queryUsageStatisticsAll(searchVO);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return queryUsageStat;
 	}
 }

@@ -14,11 +14,13 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.kt.bdapportal.common.util.RoleUserIdsStringToDomain;
 
 @Entity
 @Table(name = "BDAP_ROLE_USER")
+@JsonIgnoreProperties(ignoreUnknown=true)
 @JsonDeserialize(using = RoleUserIdsStringToDomain.class)
 public class BdapRoleUser {
 

@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.kt.bdapportal.common.util.SearchVO;
+import com.kt.bdapportal.common.util.Util;
 import com.kt.bdapportal.domain.BdapCrypto;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.service.BdapCryptoService;
 
 import net.sf.json.JSONArray;
@@ -68,7 +71,10 @@ public class DecRoleListController {
 	public void getDecRoleList(HttpServletRequest request, HttpServletResponse response) {
 		
 		try{
-			
+
+			request.setCharacterEncoding("UTF-8");
+			HttpSession session = request.getSession();
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			JSONObject jsonObj = new JSONObject();
 			
 			int page = Integer.parseInt((String)request.getParameter("page"));
@@ -80,9 +86,22 @@ public class DecRoleListController {
 			JSONArray jsonArray = new JSONArray();
 
 			List<BdapCrypto> bdapCryptoList = new ArrayList<BdapCrypto>();
+			String userRoleId = Util.getRoleId(request);
 			
-			bdapCryptoList = bdapCryptoService.getDecRoleList('D',"SUC",startnum,rows);
-			Long bdapCryptoListCount = bdapCryptoService.getDecRoleListCount('D',"SUC");
+			if(userRoleId.contains("ADMIN")){ 
+				bdapCryptoList = bdapCryptoService.getDecRoleList('D',"SUC",startnum,rows);
+			}else{
+				bdapCryptoList = bdapCryptoService.getDecRoleList(bdapUser.getUserId(),'D',"SUC",startnum,rows);
+			}
+
+
+			Long bdapCryptoListCount = 0L;
+			
+			if(userRoleId.contains("ADMIN")){ // 암복호화 승인 권한이 있는지 확인한다. 승인 권한이 있다면 전체 리스트가 나와야 함.
+				bdapCryptoListCount = bdapCryptoService.getDecRoleListCount('D',"SUC");
+			}else{
+				bdapCryptoListCount = bdapCryptoService.getDecRoleListCount(bdapUser.getUserId(), 'D',"SUC");
+			}
 			
 			
 			Date forValidate = new Date();
@@ -103,11 +122,12 @@ public class DecRoleListController {
 					status = "반려";
 				}
 				jsonObj1.put("schemaNm",bdapCrypto.getCrtSrcDbNm());
-				jsonObj1.put("tableNm",bdapCrypto.getCrtCreateTblNm());
+				jsonObj1.put("tableNm",bdapCrypto.getCrtSrcTblNm());
 				jsonObj1.put("columnNm",bdapCrypto.getCrtDocNum());
 				jsonObj1.put("startDate",processDt);
 				jsonObj1.put("endDate",validateDt);
 				jsonObj1.put("status",status);
+				jsonObj1.put("ownerId",bdapCrypto.getCrtOwnerId());
 		   		
 		   		if(forValidate.before(bdapCrypto.getCrtEndDate())){
 		   			validate = "유효함";

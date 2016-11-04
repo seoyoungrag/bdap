@@ -23,4 +23,11 @@ public class BdapAclServiceImpl implements BdapAclService{
 		return bdapAclList;
 	}
 	
+	public List<BdapAcl> getAllAclList(){
+		List<BdapAcl> bdapAclList = new ArrayList<BdapAcl>();
+		bdapAclList = bdapAclRepository.allAclList();
+		return bdapAclList;
+	}
+	
+	
 }

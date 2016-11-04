@@ -1,5 +1,5 @@
-@import url(https://fonts.googleapis.com/css?family=Noto+Sans:400,700);
-@import url(http://fonts.googleapis.com/css?family=Roboto:400,500,700);
+/* @import url(https://fonts.googleapis.com/css?family=Noto+Sans:400,700); */
+/* @import url(http://fonts.googleapis.com/css?family=Roboto:400,500,700); */
 /*
 Template Name: Minton Dashboard
 Author: CoderThemes
@@ -23,7 +23,7 @@ File: Topbar,Left-sidebar,Right-sidebar
   z-index: 1;
 }
 .logo {
-  color: #ffffff !important;
+  color: #797979 !important;
   font-size: 18px;
   font-weight: 700;
   letter-spacing: .02em;
@@ -35,7 +35,7 @@ File: Topbar,Left-sidebar,Right-sidebar
   text-align: center;
 }
 .logo i {
-  color: #ffffff;
+  color: #797979;
 }
 .navbar-default {
   background-color: #3bafda;

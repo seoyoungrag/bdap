@@ -12,10 +12,10 @@ public interface MgmtTblStatService {
 	public Long getManagedAreaUsage();
 	public Long getDailyQureyLoadCount();
 	public List<MgmtTblStat> getMgmtTblDbList();
-	public List<MgmtTblStat> getMgmtTblLoadStatusList(String dbName,SearchVO searchVO);
+	public List<MgmtTblStat> getMgmtTblLoadStatusList(SearchVO searchVO);
 	public List<MgmtTblStat> getMgmtTblDailyLoadStatusList(String dbName,SearchVO searchVO);
 	public List<MgmtTblStat> getMgmtTblMonthAvgLoadList(String dbName,SearchVO searchVO);
 	public List<Map<String,String>> getDailyMgmtTblStatList(String dbName, String searchDate);
-	
+	public List<Map<String, String>> getDashTblStatList();
 	
 }

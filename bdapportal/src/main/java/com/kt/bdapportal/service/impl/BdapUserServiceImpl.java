@@ -54,5 +54,10 @@ public class BdapUserServiceImpl implements BdapUserService {
 		}
 		return bdapUserRepository.saveAndFlush(bdapUser);
 	}
-
+	
+	@Override
+	public BdapUser insert(BdapUser bdapUser) {
+		bdapUserRepository.save(bdapUser);
+		return bdapUser;
+	}
 }

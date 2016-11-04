@@ -1,5 +1,5 @@
-@import url(https://fonts.googleapis.com/css?family=Noto+Sans:400,700);
-@import url(http://fonts.googleapis.com/css?family=Roboto:400,500,700);
+/* @import url(https://fonts.googleapis.com/css?family=Noto+Sans:400,700); */
+/* @import url(http://fonts.googleapis.com/css?family=Roboto:400,500,700); */
 /* ===========
    Core file List
 
@@ -1086,7 +1086,7 @@ h3.timeline-title {
  =============*/
 .wrapper-page {
   margin: 7.5% auto;
-  width: 360px;
+  width: 800px;
 }
 .wrapper-page .form-control {
   height: 40px;

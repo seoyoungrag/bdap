@@ -56,7 +56,7 @@
                     <div class="container">
                     	<form class="form-horizontal" role="form" id="noticeUpdateForm" name="noticeUpdateForm" method="post" action="<%=contextPath%>/notice/update.do" accept-charset="utf-8">
 						<h4 class="m-t-0 header-title" style="padding:10px;"><b>공지사항 수정</b></h4>
-						
+						<input type="hidden" name="category" value="BDAP" />
                         <div class="col-sm-12" style="">
                        		<div class="card-box" style="">
                        			<div class="row">
@@ -92,19 +92,17 @@
                         				</div>
 
                         				<div class="col-md-6" style="padding-right:20px;">
-                        					
-
-	                                            <div class="form-group" style="margin-bottom:10px;">
+	                                            <%-- <div class="form-group" style="margin-bottom:10px;">
 	                                                <label class="col-md-3 control-label" style="text-align:left;">시스템 명 :  </label>
 	                                                <div class="col-md-9">
-	                                                    <%-- <input class="form-control" type="text" placeholder="시스템명를 입력 하세요." value="<%=bbs.getBbsCategory()%>"> --%>
+	                                                    <input class="form-control" type="text" placeholder="시스템명를 입력 하세요." value="<%=bbs.getBbsCategory()%>">
 	                                                    <select class="selectpicker" name="category">                                  
 															  <option value="BDAP" <%=bbs.getBbsCategory().equals("BDAP")?"selected":"" %>>BDAP</option>
 															  <option value="KDAP" <%=bbs.getBbsCategory().equals("KDAP")?"selected":"" %>>KDAP</option>
 															  <option value="BIDW" <%=bbs.getBbsCategory().equals("BIDW")?"selected":"" %>>BIDW</option>
 														</select>
 	                                                </div>
-	                                            </div>
+	                                            </div> --%>
 	                                            <div class="form-group" style="margin-bottom:17px;">
 	                                                <label class="col-md-3 control-label" style="text-align:left;">긴급여부 : </label>
 	                                                <div class="col-md-6">
@@ -119,7 +117,7 @@
 	                                                </div>
 	                                                <div class="col-md-3 text-right">
                                      					<button class="btn btn-primary waves-effect waves-light" type="button" onclick="javascript:goMod();">수정</button>
-	                                                    <button class="btn btn-warning waves-effect waves-light" type="button" >취소</button>
+	                                                    <button class="btn btn-warning waves-effect waves-light" type="button" onclick="javascript:goList();" >취소</button>
 	                                                </div>
 	                                            </div>
 	                                       
@@ -155,7 +153,7 @@
                         <div class="col-md-12 portlets">
                                 <!-- Your awesome content goes here -->
                                 <div class="m-b-30">
-                                    <form class="dropzone dz-clickable" id="dropzone" action="fileUpload" name="dropzone" method="post" enctype="multipart/form-data">
+                                    <form class="dropzone dz-clickable" id="dropzone" action="../fileUpload" name="dropzone" method="post" enctype="multipart/form-data">
                                     	<div class="dz-default dz-message"><span>file upload</span>
                                     	</div>
                                     </form>
@@ -171,6 +169,8 @@
             </div>
         </div>
         <!-- END wrapper -->
+        <link rel="stylesheet" href="<%=contextPath%>/resources/kt/css/dropzone.css" />
+        
 		<!-- jqeury  -->
         <script src="<%=contextPath%>/resources/kt/js/jquery.min.js"></script>
         <script src="<%=contextPath%>/resources/js/jquery-ui.js" type="text/javascript"></script>
@@ -255,13 +255,10 @@
     			}
     		}
     		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
-    	    
+    		function goList(){
+        		document.location.href = "<%=contextPath%>/notice/list.do";
+        	}
+    		
         </script>
     
 <input class="dz-hidden-input" style="left: 0px; top: 0px; width: 0px; height: 0px; visibility: hidden; position: absolute;" type="file" multiple="multiple">

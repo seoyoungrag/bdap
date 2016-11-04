@@ -25,17 +25,20 @@ import com.kt.bdapportal.common.util.RequestUtil;
 import com.kt.bdapportal.common.util.SearchVO;
 import com.kt.bdapportal.domain.MgmtTblStat;
 import com.kt.bdapportal.service.MgmtTblStatService;
+import com.kt.bdapportal.service.TblService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Controller
 public class LoadStatusListController {
-
+	@Autowired
+	private TblService tblService;
 	
 	@Autowired
 	private MgmtTblStatService mgmtTblStatService;
-
+	
+	
 	
 	@RequestMapping("/loadStatusList.do")				//data meta system 적재현황 조회	 
 	public ModelAndView loadStatusList(HttpServletRequest request, HttpServletResponse response) {
@@ -65,8 +68,8 @@ public class LoadStatusListController {
 			
 			mav.addObject("searchVO", searchVO);								
 			
-			List<MgmtTblStat> mgmtTblStatDbList = mgmtTblStatService.getMgmtTblDbList();
-			mav.addObject("mgmtTblStatDbList", mgmtTblStatDbList);
+			List<String> tblList = tblService.getSchemaList(true, "");// 관리자용 전체 리스트를 불러오면 된다.
+			mav.addObject("tblList", tblList);
 			
 		}catch(Exception e){
 			e.printStackTrace();	
@@ -95,21 +98,11 @@ public class LoadStatusListController {
 			String colNamesArr = (String)request.getParameter("colNamesArr");
 			int colNamesArrlen = Integer.parseInt(colNamesArr); 
 			
-			String dbName = (String)request.getParameter("searchWord");
+			SearchVO searchVO = new SearchVO();
+			String dbName = searchVO.nullTrim((String)request.getParameter("searchWord"));
 			String searchType = (String)request.getParameter("searchType");				//searchType
 			String startDate = (String)request.getParameter("startDate");				//searchWord
 			String endDate = (String)request.getParameter("endDate");	
-			
-			SearchVO searchVO = new SearchVO();
-			
-			List<MgmtTblStat> mgmtTblStatDbList = new ArrayList<MgmtTblStat>();
-			
-			if(dbName == null || dbName.equals("")){															//dbId
-				mgmtTblStatDbList = mgmtTblStatService.getMgmtTblDbList();
-				if(!mgmtTblStatDbList.isEmpty()){
-					dbName = mgmtTblStatDbList.get(0).getDbName();
-				}
-			}
 			
 			searchVO.setSearchWord(dbName);									
 			searchVO.setStartDate(startDate);
@@ -132,9 +125,11 @@ public class LoadStatusListController {
 			}else{
 				startDate = searchVO.getStartDate().replaceAll("/", "-");
 				endDate = searchVO.getEndDate().replaceAll("/", "-");
+				searchVO.setStartDate(startDate);
+				searchVO.setEndDate(endDate);
 			}
 			
-			mgmtTblStatList = mgmtTblStatService.getMgmtTblLoadStatusList(dbName,searchVO);
+			mgmtTblStatList = mgmtTblStatService.getMgmtTblLoadStatusList(searchVO);
 
 			for(MgmtTblStat s : mgmtTblStatList){
 				ymdSet.add(transFormat.parse(s.getEtlYmd()));
@@ -269,21 +264,13 @@ public class LoadStatusListController {
 			String colNamesArr = (String)request.getParameter("colNamesArr");
 			int colNamesArrlen = Integer.parseInt(colNamesArr); 
 			
-			String dbId = (String)request.getParameter("searchWord");
+			SearchVO searchVO = new SearchVO();
+			String dbName = searchVO.nullTrim((String)request.getParameter("searchWord"));
 			String searchType = (String)request.getParameter("searchType");				//searchType
 			String startDate = (String)request.getParameter("startDate");				//searchWord
 			String endDate = (String)request.getParameter("endDate");	
 
-			SearchVO searchVO = new SearchVO();
-			
-			List<MgmtTblStat> mgmtTblStatDbList = new ArrayList<MgmtTblStat>();
-			
-			if(dbId == null || dbId.equals("")){															//dbId
-				mgmtTblStatDbList = mgmtTblStatService.getMgmtTblDbList();
-				dbId = mgmtTblStatDbList.get(0).getDbId();
-			}
-			
-			searchVO.setSearchWord(dbId);									
+			searchVO.setSearchWord(dbName);									
 			searchVO.setStartDate(startDate);
 			searchVO.setEndDate(endDate);
 			searchVO.setSearchType(searchType);
@@ -304,9 +291,11 @@ public class LoadStatusListController {
 			}else{
 				startDate = searchVO.getStartDate().replaceAll("/", "-");
 				endDate = searchVO.getEndDate().replaceAll("/", "-");
+				searchVO.setStartDate(startDate);
+				searchVO.setEndDate(endDate);
 			}
 			
-			mgmtTblStatList = mgmtTblStatService.getMgmtTblLoadStatusList(dbId,searchVO);
+			mgmtTblStatList = mgmtTblStatService.getMgmtTblLoadStatusList(searchVO);
 
 			for(MgmtTblStat s : mgmtTblStatList){
 				ymdSet.add(transFormat.parse(s.getEtlYmd()));

@@ -1,8 +1,8 @@
 package com.kt.bdapportal.domain;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -86,6 +87,9 @@ public class BdapBbs {
     @OneToMany(mappedBy="parent",fetch=FetchType.EAGER)
     private List<BdapBbs> children;
     
+    @Transient
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    
     
 	public BdapBbs getParent() {
 		return parent;
@@ -121,6 +125,14 @@ public class BdapBbs {
 
 	public Timestamp getBbsRegDt() {
 		return bbsRegDt;
+	}
+	
+	public String getFormatBbsRegDt() {
+		return this.sdf.format(this.bbsRegDt);
+	}
+	
+	public String getFormatBbsModDt() {
+		return this.sdf.format(this.bbsRegDt);
 	}
 
 	public void setBbsRegDt(Timestamp bbsRegDt) {

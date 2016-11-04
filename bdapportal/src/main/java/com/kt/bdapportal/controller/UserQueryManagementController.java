@@ -7,15 +7,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.kt.bdapportal.common.util.SearchVO;
-import com.kt.bdapportal.common.util.Util;
 import com.kt.bdapportal.domain.MgmtQryHist;
 import com.kt.bdapportal.service.MgmtQryHistService;
 
@@ -39,7 +35,8 @@ public class UserQueryManagementController {
 			request.setCharacterEncoding("UTF-8");
 			
 			String searchType = (String)request.getParameter("searchType");				//searchType
-			String term = (String)request.getParameter("term");			//timing
+			String termTime = (String)request.getParameter("termTime");			//timing
+			String termStatus = (String)request.getParameter("termStatus");			//timing
 			String startDate = (String)request.getParameter("startDate");
 			String endDate = (String)request.getParameter("endDate");
 
@@ -47,7 +44,8 @@ public class UserQueryManagementController {
 			searchVO.setStartDate(searchVO.nullTrim(startDate));
 			searchVO.setEndDate(searchVO.nullTrim(endDate));
 			searchVO.setSearchType(searchVO.nullTrim(searchType, "normal"));
-			searchVO.setTerm(Integer.parseInt(searchVO.nullTrim(term, "0")));
+			searchVO.setTermTime(Integer.parseInt(searchVO.nullTrim(termTime, "0")));
+			searchVO.setTermStatus(searchVO.nullTrim(termStatus, ""));
 			
 			mav.addObject("searchVO", searchVO);		
 		}catch(Exception e){
@@ -63,7 +61,8 @@ public class UserQueryManagementController {
 			
 			request.setCharacterEncoding("UTF-8");
 			String searchType = (String)request.getParameter("searchType");	// searchType
-			String term = (String)request.getParameter("term");	// term
+			String termTime = (String)request.getParameter("termTime");	
+			String termStatus = (String)request.getParameter("termStatus");	
 			String startDate = (String)request.getParameter("startDate");
 			String endDate = (String)request.getParameter("endDate");
 			
@@ -71,7 +70,8 @@ public class UserQueryManagementController {
 			searchVO.setStartDate(searchVO.nullTrim(startDate));
 			searchVO.setEndDate(searchVO.nullTrim(endDate));
 			searchVO.setSearchType(searchVO.nullTrim(searchType,"personal"));
-			searchVO.setTerm(Integer.parseInt(searchVO.nullTrim(term, "0")));
+			searchVO.setTermTime(Integer.parseInt(searchVO.nullTrim(termTime, "0")));
+			searchVO.setTermStatus(searchVO.nullTrim(termStatus, ""));
 			searchVO.setPaging(request);
 				 
 			JSONObject jsonObj = new JSONObject();
@@ -115,8 +115,13 @@ public class UserQueryManagementController {
 		try{
 			request.setCharacterEncoding("UTF-8");
 			String searchType = (String)request.getParameter("searchType");	//searchType
+			String startDate = (String)request.getParameter("startDate");	//searchType
+			String endDate = (String)request.getParameter("endDate");	//searchType
+			
 			
 			SearchVO searchVO = new SearchVO();
+			searchVO.setStartDate(searchVO.nullTrim(startDate));
+			searchVO.setEndDate(searchVO.nullTrim(endDate));
 			searchVO.setSearchType(searchVO.nullTrim(searchType,"personal"));
 			searchVO.setPaging(request);
 			

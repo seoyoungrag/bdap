@@ -47,9 +47,7 @@
         <link href="<%=contextPath%>/resources/kt/css/pages.css" rel="stylesheet" type="text/css">
         <link href="<%=contextPath%>/resources/kt/css/menu.css" rel="stylesheet" type="text/css">
         <link href="<%=contextPath%>/resources/kt/css/responsive.css" rel="stylesheet" type="text/css">
-
-        <script src="//www.google-analytics.com/analytics.js" async=""></script><script src="<%=contextPath%>/resources/kt/js/modernizr.min.js"></script>
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="<%=contextPath%>/resources/kt/js/modernizr.min.js"></script>
         
         
 		<link rel="stylesheet" type="text/css" media="screen" href="<%=contextPath%>/resources/css/jquery-ui.css" />
@@ -57,26 +55,6 @@
 		<link rel="stylesheet" type="text/css" media="screen" href="<%=contextPath%>/resources/jqgrid/css/ui.jqgrid-bootstrap.css" />
 		<link rel="stylesheet" type="text/css" href="<%=contextPath%>/resources/kt/css/bootstrap-select.css" />
 	
-	
-	
-	
-        <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-            ga('create', 'UA-72255993-1', 'auto');
-            ga('send', 'pageview');
-        </script>
-
-        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-       
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-       
-       
        <%-- <link rel="stylesheet" href="<%=contextPath%>/resources/kt/images/style.css" type="text/css"> --%>
        <script src="<%=contextPath%>/resources/kt/amcharts/amcharts.js" type="text/javascript"></script>
        <script src="<%=contextPath%>/resources/kt/amcharts/serial.js" type="text/javascript"></script>
@@ -131,7 +109,7 @@
 													<label class="col-sm-4 control-label" style="float:left; margin-top:5px;"><i class="zmdi zmdi-flare"></i>&nbsp;Schema</label>
 													<div class="col-sm-8" style="float:right;">
 														<!-- <input class="form-control" required="" type="text" placeholder="Type something"> -->
-														<select class="selectpicker form-control"  name="schema" id="schema" onchange="goSelectTable(this.value)">
+														<select class="selectpicker form-control" required data-width="auto" name="schema" id="schema" onchange="goSelectTable(this.value)">
 															<option value="">Schema 선택</option>
 														</select>
 													</div>
@@ -140,7 +118,7 @@
 													<label class="col-sm-4 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;Table</label>
 													<div class="col-sm-8" style="float:right;">
 														<!-- <input class="form-control" id="pass2" required="" type="password" placeholder="Password" data-parsley-id="36"> -->
-														<select class="selectpicker" name="tableList" id="tableList" onchange="javascript:selectTable(this.value);" >
+														<select class="selectpicker" data-width="auto" name="tableList" id="tableList" onchange="javascript:selectTable(this.value);" >
 															  <option>Schema를 선택 하세요</option>
 														</select>
 													</div>
@@ -149,7 +127,7 @@
 													<label class="col-sm-5 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;법률검토완료여부</label>
 													<div class="col-sm-8" style="float:right;">
 														<!-- <input class="form-control" required="" type="email" placeholder="Enter a valid e-mail" parsley-type="email" data-parsley-id="40"> -->
-														<select class="selectpicker" id="lawReview" name="lawReview">
+														<select class="selectpicker" data-width="auto" id="lawReview" name="lawReview">
 														  <option value="Y">완료</option>
 														  <option value="N">미완료</option>
 														</select>
@@ -158,62 +136,61 @@
 												<div class="form-group" style="padding-bottom:10px; border-bottom-width:1px; border-bottom-style:dotted; border-bottom-color:#ddd; margin-bottom:10px;">
 													<label class="col-sm-4 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;Column</label>
 													<div class="col-sm-8" style="float:right;">
-														<input class="form-control" type="text" id="selectedColumn" name="selectedColumn" placeholder="" required="" onclick="javascript:selectColumn();">
+														<input class="form-control" type="text" id="selectedColumn" name="selectedColumn" placeholder="" required onclick="javascript:selectColumn();">
 														<input class="form-control" type="hidden" id="selectedColumnId" name="selectedColumnId" />
 													</div>
 												</div>
+												<%if(type.equals("enc")){ %>
 												<div class="form-group" style="padding-bottom:10px; border-bottom-width:1px; border-bottom-style:dotted; border-bottom-color:#ddd; margin-bottom:10px;">
 													<label class="col-sm-4 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;암호화 테이블명</label>
 													<div class="col-sm-8" style="float:right;">
-														<input class="form-control"  placeholder="테이블 명을 입력 하세요" id="tableNm" name="tableNm" required="" >
+														<input class="form-control"  placeholder="테이블 명을 입력 하세요" id="tableNm" name="tableNm" required />
 													</div>
 												</div>
+												<% }%>
+												
 												<div class="form-group" style="padding-bottom:10px; border-bottom-width:1px; border-bottom-style:dotted; border-bottom-color:#ddd; margin-bottom:10px;">
 													<label class="col-sm-4 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;프로젝트명</label>
 													<div class="col-sm-8" style="float:right;">
-														<input class="form-control" required=""  placeholder="프로젝트 명을 입력 하세요" id="prjNm" name="prjNm" required="" >
+														<input class="form-control" required=""  placeholder="프로젝트 명을 입력 하세요" id="prjNm" name="prjNm" required >
 													</div>
 												</div>
 												<div class="form-group" style="padding-bottom:10px; border-bottom-width:1px; border-bottom-style:dotted; border-bottom-color:#ddd; margin-bottom:10px;">
 													<label class="col-sm-6 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;신청사유</label>
 													<div class="col-sm-6" style="float:right;">
-														<input class="form-control" required="" type="text" placeholder="신청 사유를 입력 하세요" id="reason" name="reason" required="" >
+														<input class="form-control" required="" type="text" placeholder="신청 사유를 입력 하세요" id="reason" name="reason" required >
 													</div>
 												</div>
 												<div class="form-group" style="padding-bottom:10px; border-bottom-width:1px; border-bottom-style:dotted; border-bottom-color:#ddd; margin-bottom:10px;">
 													<label class="col-sm-5 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;내부결재문서번호</label>
 													<div class="col-sm-7" style="float:right;">
-														<input class="form-control" required="" type="text" placeholder="내부결재 문서 번호를 입력 하세요" id="docNumber" name="docNumber" required="">
+														<input class="form-control" required="" type="text" placeholder="내부결재 문서 번호를 입력 하세요" id="docNumber" name="docNumber" required>
 													</div>
 												</div>
 												<input type="hidden" id="fileList" name="fileList" />
 													<div class="form-group" style="padding-bottom:10px; padding-right:10px;border-bottom-width:1px; border-bottom-style:dotted; border-bottom-color:#ddd; margin-bottom:10px;">
 													<label class="col-sm-4 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;암호화 만료일자</label>
 										            <div class='col-sm-4 input-group date' id='datetimepicker6' style="float:right;width:40%">
-										                <input type='text' class="form-control" name="validateDate" id="validateDate" value="" />
+										                <input type='text' class="form-control" name="validateDate" id="validateDate" value="" required/>
 										                <span class="input-group-addon">
 										                    <span class="glyphicon glyphicon-calendar"></span>
 										                </span>
 										            </div>
 									            </div>
-									            <input type="hidden"  id="colTblNm" name="colTblNm"/>
-												</form>	
-												<form class="form-horizontal group-border-dashed" id="fileUploadForm" action="fileUpload" name="fileUploadForm" method="post" enctype="multipart/form-data" >
-													<div class="form-group" style="padding-bottom:10px; border-bottom-width:1px; border-bottom-style:dotted; border-bottom-color:#ddd; margin-bottom:10px;">
-														<label class="col-sm-6 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;법률검토결과</label>
-											            <div class="input-group" style="margin-right:10px;">
-											                <input type="text" class="form-control" readonly>
-											                <label class="input-group-btn">
-											                    <span class="btn btn-default">
-											                        	찾아보기<!-- &hellip; --> <input type="file" id="fileArr"  name="fileArr"  style="display: none;" multiple="multiple" onchange="javascript:fileUpLoad(this);" />
-											                    </span>
-											                </label>
-											            </div>
-													</div>
-												</form>
+												<div class="form-group" style="padding-bottom:10px; border-bottom-width:1px; border-bottom-style:dotted; border-bottom-color:#ddd; margin-bottom:10px;">
+													<label class="col-sm-6 control-label" style="float:left; margin-top:7px;"><i class="zmdi zmdi-flare"></i>&nbsp;법률검토결과</label>
+										            <div class="input-group" style="margin-right:10px;">
+										                <input type="text" class="form-control" readonly required>
+										                <label class="input-group-btn">
+										                    <span class="btn btn-default">
+										                        	찾아보기<input type="file" id="fileArr"  name="fileArr"  style="display: none;" multiple="multiple" onchange="javascript:fileUpLoad(this);" />
+										                    </span>
+										                </label>
+										            </div>
+												</div>
 												<div class="form-group" style="margin-bottom:0px;">
 													<div class="col-sm-offset-3 col-sm-9 text-right">
-														<button class="btn btn-primary waves-effect waves-light" onclick="javascirpt:insertEncDec()">
+														<button class="btn btn-primary waves-effect waves-light" type="submit">
 															확인
 														</button>
 														<button class="btn btn-default waves-effect m-l-5" type="reset" onclick="javascript:winclose();">
@@ -221,13 +198,11 @@
 														</button>
 													</div>
 												</div>
-											
+												<input type="hidden"  id="colTblNm" name="colTblNm"/>
+											</form>	
 								</div>
                        			<input type="hidden"  id="colTblId" name="colTblId"/>
                        	</div>
-                       
-                       
-
                     </div>
                 </div>
             </div>
@@ -292,12 +267,6 @@
     	        	format: 'YYYY/MM/DD'
     	        });
     	        
-                $('.counter').counterUp({
-                    delay: 100,
-                    time: 1200
-                });
-                $('.circliful-chart').circliful();
-
 				$.ajax({
 				 type: "POST",
 				 url:'<%=contextPath%>/getSchemaManageDbNmList.do', 
@@ -318,23 +287,6 @@
 				
             });
 
-            /* BEGIN SVG WEATHER ICON */
-            if (typeof Skycons !== 'undefined'){
-            var icons = new Skycons(
-                {"color": "#3bafda"},
-                {"resizeClear": true}
-                ),
-                    list  = [
-                        "clear-day", "clear-night", "partly-cloudy-day",
-                        "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
-                        "fog"
-                    ],
-                    i;
-
-                for(i = list.length; i--; )
-                icons.set(list[i], list[i]);
-                icons.play();
-            };
 
 
 			function fileUpLoad(fileObj){
@@ -343,7 +295,7 @@
 					return false;
 				}
 				
-				var formData = new FormData($('#fileUploadForm')[0]);
+				var formData = new FormData($('#encDecRegForm')[0]);
 				 //var formData = $('#fileUploadForm').serialize();
 			       	 $.ajax({
 			       	    url: '<%=contextPath%>/fileUpload',
@@ -369,7 +321,6 @@
     		}
     		
     		function goSelectTable(value){
-    			
     			$.ajax({
     				type:'post',
     				async:true,
@@ -377,20 +328,21 @@
     				dataType:'json',
     				url:'<%=contextPath%>/getTableList.do?schema='+value,
     				success:function(data) {
-    				
-    				  $("#tableList").empty();
-    					
-    				var tableListContent = ""; 
-    					
-    					/* categorySubContent += '<div class="col-md-3" name="categorySub" id="categorySub">';
-    					categorySubContent += '<select class="selectpicker">'; */
-    					 for(var i = 0; i < data.tblList.length; i++){
-    						 tableListContent += '<option id='+data.tblList[i].tblId+' value='+data.tblList[i].tblId+'>'+data.tblList[i].tblEngNM+'</option>';
+						$("#tableList").empty();
+    					var tableListContent = ""; 
+						
+    					for(var i = 0; i < data.tblList.length; i++){
+    						// 스키마가 변경되면 해당 스키마의 가장 첫 테이블이 자동 선택되는 것 처럼 처리해야 한다.
+    						if(i==0){
+    							$("#colTblId").val(data.tblList[i].tblId);
+    			    			$("#colTblNm").val(data.tblList[i].tblEngNM);
+    						}
+    						
+							tableListContent += '<option id='+data.tblList[i].tblId+' value='+data.tblList[i].tblId+'>'+data.tblList[i].tblEngNM+'</option>';
     					} 
     					
-    					 $("#tableList").html(tableListContent);
+    					$("#tableList").html(tableListContent);
     					$('.selectpicker').selectpicker('refresh'); 
-    					 //$(".bootstrap-select").css("width","100%"); 
     				},
     				error:function(data,status,err) {
     				}
@@ -412,10 +364,7 @@
     			
     		}
     		
-    		
-    		
     		function enc(){
-    			
     			window.open("<%=contextPath%>/encdec.do?type=enc","암호화 신청","width=500,height=500");
     		}
     		
@@ -456,32 +405,17 @@
     			   var radioHtml = '<input type="radio" value=' + value + ' name="radioid" />';
     			   return radioHtml;
     		}
-    		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
     	    
     	    function selectColumn(){
-    	    	
     	    	var popWidth = 300;
         		var popHeight = 300;
         		var width = screen.width;
     			var height = screen.height;
-
-        			var left = (screen.width/2)-(popWidth/2);
-        			var top = (screen.height/2)-(popHeight/2);
-        			
-        			var param = "width="+popWidth+",height="+popHeight+",left="+left+",top="+top;
-        			
-        			var colTblId = $("#colTblId").val();
-        			
-        			
-        			window.open("<%=contextPath%>/selectcolumn.do?colTblId="+colTblId,"컬럼 선택",param);
-        		
+       			var left = (screen.width/2)-(popWidth/2);
+       			var top = (screen.height/2)-(popHeight/2);
+       			var param = "width="+popWidth+",height="+popHeight+",left="+left+",top="+top;
+       			var colTblId = $("#colTblId").val();
+       			window.open("<%=contextPath%>/selectcolumn.do?colTblId="+colTblId+"&type=<%=type%>","컬럼 선택",param);
     	    }
     	    
     	    function setData(str,id){

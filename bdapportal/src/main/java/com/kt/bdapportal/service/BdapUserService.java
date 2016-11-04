@@ -10,5 +10,5 @@ public interface BdapUserService {
 	public List<BdapUser> getUserList(SearchVO searchVO);
 	public BdapUser getBdapUser(SearchVO searchVO);
 	public BdapUser updateCellUserInfo(String id, String cellName, String cellValue);
-	
+	public BdapUser insert(BdapUser bdapUser);
 }

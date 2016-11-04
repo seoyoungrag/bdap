@@ -43,27 +43,41 @@ public class BdapColServiceImpl implements BdapColService {
 		List<BdapCol> bdapColList = new ArrayList<BdapCol>();
 
 		if (searchVO.getSearchType().equals("colKorNm")) {
-			bdapColList = bdapColRepository.colByColKorNm(tblId, searchVO.getSearchWord(), startNum, rows);
+			bdapColList = bdapColRepository.colByColKorNm(searchVO.getSearchWord(), startNum, rows);
 		} else if (searchVO.getSearchType().equals("colEngNm")) {
-			bdapColList = bdapColRepository.colByColEngNm(tblId, searchVO.getSearchWord(), startNum, rows);
+			bdapColList = bdapColRepository.colByColEngNm( searchVO.getSearchWord(), startNum, rows);
 		} else if (searchVO.getSearchType().equals("desc")) {
-			bdapColList = bdapColRepository.colByColDesc(tblId, searchVO.getSearchWord(), startNum, rows);
+			bdapColList = bdapColRepository.colByColDesc(searchVO.getSearchWord(), startNum, rows);
 		}
 
 		return bdapColList;
 	}
 
+	public List<BdapCol> getBdapColListByColNm(String tblId, SearchVO searchVO) {
+
+		List<BdapCol> bdapColList = new ArrayList<BdapCol>();
+
+		if (searchVO.getSearchType().equals("colKorNm")) {
+			bdapColList = bdapColRepository.colByColKorNm(tblId, searchVO.getSearchWord());
+		} else if (searchVO.getSearchType().equals("colEngNm")) {
+			bdapColList = bdapColRepository.colByColEngNm(tblId, searchVO.getSearchWord());
+		} else if (searchVO.getSearchType().equals("desc")) {
+			bdapColList = bdapColRepository.colByColDesc(tblId, searchVO.getSearchWord());
+		}
+
+		return bdapColList;
+	}
 	@Override
 	public Long getColCountByColNm(String tblId, SearchVO searchVO) {
 
 		Long count = 0L;
 
 		if (searchVO.getSearchType().equals("colKorNm")) {
-			count = bdapColRepository.countColByColKorNm(tblId, searchVO.getSearchWord());
+			count = bdapColRepository.countColByColKorNm(searchVO.getSearchWord());
 		} else if (searchVO.getSearchType().equals("colEngNm")) {
-			count = bdapColRepository.countColByColEngNm(tblId, searchVO.getSearchWord());
+			count = bdapColRepository.countColByColEngNm(searchVO.getSearchWord());
 		} else if (searchVO.getSearchType().equals("desc")) {
-			count = bdapColRepository.countColByColDesc(tblId, searchVO.getSearchWord());
+			count = bdapColRepository.countColByColDesc(searchVO.getSearchWord());
 		}
 
 		return count;
@@ -72,24 +86,30 @@ public class BdapColServiceImpl implements BdapColService {
 	@Override
 	public BdapCol updateCellColInfo(String id, String cellName, String cellValue) {
 		BdapCol bdapCol = bdapColRepository.findOne(id);
-		cellValue = cellValue.toLowerCase();
+		String localCellValue = cellValue.toLowerCase();
 		if (cellName.equals("colKorNm")) {
-			bdapCol.setColKorNm(cellValue);
+			bdapCol.setColKorNm(localCellValue);
 		} else if (cellName.equals("dataType")) {
-			bdapCol.setColDataType(cellValue);
+			bdapCol.setColDataType(localCellValue);
 		} else if (cellName.equals("desc")) {
-			bdapCol.setColDesc(cellValue);
+			bdapCol.setColDesc(localCellValue);
 		} else if (cellName.equals("isEnc")) {
-			bdapCol.setColIsEnc(cellValue.charAt(0));
+			bdapCol.setColIsEnc(localCellValue.charAt(0));
 		} else if (cellName.equals("isChkNull")) {
-			bdapCol.setColIsChkNull(cellValue.charAt(0));
+			bdapCol.setColIsChkNull(localCellValue.charAt(0));
 		} else if (cellName.equals("isChkType")) {
-			bdapCol.setColIsChkType(cellValue.charAt(0));
+			bdapCol.setColIsChkType(localCellValue.charAt(0));
 		} else if (cellName.equals("chkTypeFormat")) {
-			bdapCol.setColRegex(cellValue);
+			bdapCol.setColRegex(localCellValue);
 		}
 		return bdapColRepository.saveAndFlush(bdapCol);
 
+	}
+
+	@Override
+	public List<BdapCol> getBdapColListByTblIdAndIsPrivate(String colTblId) {
+		List<BdapCol> bdapColList = bdapColRepository.getBdapColListByTblIdAndIsPrivate(colTblId);
+		return bdapColList;
 	}
 
 }

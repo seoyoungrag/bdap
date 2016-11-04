@@ -1,13 +1,31 @@
 package com.kt.bdapportal.common.util;
 
+import java.io.IOException;
+import java.util.Properties;
+
+
 public class BbsConstant {
 
-	
+    public static final String TEMP_PATH_KEY = "file.temp.path";
+    private static final String STORE_PATH_KEY = "file.store.path";
+    
 	//temp 경로
-	public static final String FILE_TEMP_PATH = "C:/Users/sourcream/temp"; 
+	public static final String FILE_TEMP_PATH; 
 	//저장 경로
-	public static final String FILE_STORE_PATH = "C:/Users/sourcream/bdapportal";
+	public static final String FILE_STORE_PATH;
 	
+
+    static {
+    	Properties props = new Properties();
+			try {
+				props.load(BbsConstant.class.getClassLoader().getResourceAsStream("/portal.properties"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			FILE_TEMP_PATH = props.getProperty(TEMP_PATH_KEY);
+			FILE_STORE_PATH = props.getProperty(STORE_PATH_KEY);
+    }
+    
 	//공지사항 코드
 	public static final String BBS_CODE = "BO1";
 	//qna 코드
@@ -27,13 +45,5 @@ public class BbsConstant {
 		
 	//qna 상태 보완 요청
 	public static final char QNA_STATUS_REQ = 'R';
-	
-	
-	
-	
-	
-	
-	
-	
 	
 }

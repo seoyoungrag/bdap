@@ -1,6 +1,5 @@
 package com.kt.bdapportal.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,7 @@ public class CommentServiceImpl implements CommentService {
 	
 	
 	@Override
-	public BdapComment commentInsert(BdapComment bdapComment){			//insert 와 update를 진행한다.
+	public BdapComment commentInsert(BdapComment bdapComment){	
 		
 		commentRepository.save(bdapComment);
 		commentRepository.flush();

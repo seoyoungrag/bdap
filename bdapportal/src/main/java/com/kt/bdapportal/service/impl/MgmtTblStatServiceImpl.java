@@ -18,8 +18,13 @@ public class MgmtTblStatServiceImpl implements MgmtTblStatService{
 	
 	@Autowired
 	private MgmtTblStatRepository mgmtTblStatRepository;
+
+	@Override
+	public List<Map<String, String>> getDashTblStatList() {
+		return mgmtTblStatRepository.getDashTblStatList(); 
+	}
 	
-	
+	@Deprecated
 	public List<MgmtTblStat> getMgmtTblList(){
 		
 		List<MgmtTblStat> mgmtTblStatList = new ArrayList<MgmtTblStat>();
@@ -30,6 +35,11 @@ public class MgmtTblStatServiceImpl implements MgmtTblStatService{
 	}
 	
 	
+	@Deprecated(/*
+	 * mgmt_tbl_stat에서 데이터를 가지고 오던 것을 mgmt_user_tbl_stat에서 가져옴. bdap_tbl과 조인하여 is_managed만 플래그로 구별해서 가지고옴.
+	 * 추가된 메소드 - DailyUserTableService, managedAreaUsage()
+	 */
+)
 	public Long getManagedAreaUsage(){
 		
 		Long usage  = 0L;
@@ -60,22 +70,11 @@ public class MgmtTblStatServiceImpl implements MgmtTblStatService{
 	}
 	
 	
-	public List<MgmtTblStat> getMgmtTblLoadStatusList(String dbName,SearchVO searchVO){
+	public List<MgmtTblStat> getMgmtTblLoadStatusList(SearchVO searchVO){
 		
 		List<MgmtTblStat> mgmtTblStatList = new ArrayList<MgmtTblStat>();
 		try{
-			if(searchVO.getStartDate().equals("")){
-				mgmtTblStatList = mgmtTblStatRepository.mgmtTblLoadStatusList(dbName);	
-			}else{
-				String startDate = searchVO.getStartDate()+" 00:00:00";
-				String endDate = searchVO.getEndDate()+" 23:59:59";
-				startDate = startDate.replaceAll("\\/", "-");	
-				endDate = endDate.replaceAll("\\/", "-");	
-				java.util.Date searchStartDate = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(startDate);
-				java.util.Date searchEndDate = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(endDate);
-				mgmtTblStatList = mgmtTblStatRepository.mgmtTblLoadStatusListSearch(dbName,searchStartDate,searchEndDate);
-			}
-			
+			mgmtTblStatList = mgmtTblStatRepository.mgmtTblLoadStatusList(searchVO);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -134,11 +133,5 @@ public class MgmtTblStatServiceImpl implements MgmtTblStatService{
 		return mgmtTblStatList;
 		
 	}
-
-	
-	
-	
-	
-	
 	
 }

@@ -2,16 +2,20 @@
     pageEncoding="utf-8"%>
     
 <%
-  String test = (String)request.getAttribute("test");
   String contextPath = (String)request.getContextPath();
+  
+  boolean isAdmin = (Boolean)session.getAttribute("isAdmin");
+  boolean isProcess = (Boolean)session.getAttribute("isProcess");
 %>    
     
 <!DOCTYPE html>
 <html class=" js flexbox no-flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage no-websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients no-cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg no-smil svgclippaths">
-  
-  
-  
-  
+<head>
+<style>
+	.ui-jqgrid {position: relative; font-size:11px;}
+	#encList {position: relative; font-size:11px;}
+</style>
+</head> 
 <body class="fixed-left widescreen">
         
         <!-- Begin page -->
@@ -43,8 +47,13 @@
 						
                         <div class="col-sm-12" style="">
                         	<div class="card-box" style="margin-bottom:10px; padding-bottom:10px; padding-top:10px;">
-                       			<button class="btn btn-inverse waves-effect waves-light" onclick="javascript:enc();">
-                       				<i class="zmdi zmdi-transform"></i> <span>암호화 신청</span>
+                        		<%if(isAdmin){ %>
+	                        		<button class="btn btn-inverse waves-effect waves-light" onclick="javascript:enc();">
+	                       				<i class="zmdi zmdi-transform"></i> <span>암호화 신청</span>
+	                       			</button>
+                        		<%} %>
+                       			<button class="btn btn-inverse waves-effect waves-light">
+                       				<i class="zmdi zmdi-library"></i> <span>암호화 신청 프로세스 안내</span>
                        			</button>
                        			<!-- <button class="btn btn-inverse waves-effect waves-light" style="margin-left:15px;" onclick="javascript:dec();">
                        				<i class="zmdi zmdi-transform"></i> <span>복호화 신청</span>
@@ -69,82 +78,40 @@
            
         </div>
         <!-- END wrapper -->
-
-		
-    
-        <script>
-            var resizefunc = [];
-        </script>
-
-        <!-- Plugins  -->
+    	<!-- jqeury  -->
         <script src="<%=contextPath%>/resources/kt/js/jquery.min.js"></script>
+        
+        <script src="<%=contextPath%>/resources/js/jquery-ui.js" type="text/javascript"></script>
+        <!-- jqeury Custom main Js -->
+        <script src="<%=contextPath%>/resources/kt/js/jquery.core.js"></script>
+        
+        <!-- bootstrap -->
         <script src="<%=contextPath%>/resources/kt/js/bootstrap.min.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/detect.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/fastclick.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/jquery.slimscroll.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/jquery.blockUI.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/waves.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/wow.min.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/jquery.nicescroll.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/jquery.scrollTo.min.js"></script>
-        <script src="<%=contextPath%>/resources/kt/plugins/switchery/switchery.min.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/bootstrap-treeview.js"></script>
-       
-       
-       <script src="<%=contextPath%>/resources/kt/js/moment.js"></script>
+        <script src="<%=contextPath%>/resources/kt/js/moment.js"></script>
         <script src="<%=contextPath%>/resources/kt/js/bootstrap-datetimepicker.min.js"></script>
         <script src="<%=contextPath%>/resources/kt/js/bootstrap-select.js"></script>
         
-        
-        
-        <!-- Counter Up  -->
-        <script src="<%=contextPath%>/resources/kt/lib/jquery.waypoints.js"></script>
-        <script src="<%=contextPath%>/resources/kt/plugins/counterup/jquery.counterup.min.js"></script>
-
-        <!-- circliful Chart -->
-        <script src="<%=contextPath%>/resources/kt/plugins/jquery-circliful/js/jquery.circliful.min.js"></script>
-        <script src="<%=contextPath%>/resources/kt/plugins/jquery-sparkline/jquery.sparkline.min.js"></script>
-
-        <!-- skycons -->
-        <script src="<%=contextPath%>/resources/kt/plugins/skyicons/skycons.min.js" type="text/javascript"></script>
-        
-        <!-- Page js  -->
-        <script src="<%=contextPath%>/resources/kt/pages/jquery.dashboard.js"></script>
-
-        <!-- Custom main Js -->
-        <script src="<%=contextPath%>/resources/kt/js/jquery.core.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/jquery.app.js"></script>
-
-		<script src="<%=contextPath%>/resources/jqgrid/js/jquery.jqGrid.min.js" type="text/ecmascript"></script>
+        <!-- jqgrid -->
+        <script src="<%=contextPath%>/resources/jqgrid/js/jquery.jqGrid.min.js" type="text/ecmascript"></script>
 		<script src="<%=contextPath%>/resources/jqgrid/js/i18n/grid.locale-kr.js" type="text/ecmascript"></script>
-		<script src="<%=contextPath%>/resources/js/jquery-ui.js" type="text/javascript"></script>
 
         <script type="text/javascript">
             jQuery(document).ready(function($) {
-                $('.counter').counterUp({
-                    delay: 100,
-                    time: 1200
-                });
-                $('.circliful-chart').circliful();
+            	$('#datetimepicker6').datetimepicker({
+    	        	format: 'YYYY/MM/DD'
+    	        	
+    	        });
+    	        $('#datetimepicker7').datetimepicker({
+    	            useCurrent: false, //Important! See issue #1075
+    	            format: 'YYYY/MM/DD'
+    	        });
+    	        $("#datetimepicker6").on("dp.change", function (e) {
+    	            $('#datetimepicker7').data("DateTimePicker").minDate(e.date);
+    	        });
+    	        $("#datetimepicker7").on("dp.change", function (e) {
+    	            $('#datetimepicker6').data("DateTimePicker").maxDate(e.date);
+    	        });
             });
-
-            /* BEGIN SVG WEATHER ICON */
-            if (typeof Skycons !== 'undefined'){
-            var icons = new Skycons(
-                {"color": "#3bafda"},
-                {"resizeClear": true}
-                ),
-                    list  = [
-                        "clear-day", "clear-night", "partly-cloudy-day",
-                        "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
-                        "fog"
-                    ],
-                    i;
-
-                for(i = list.length; i--; )
-                icons.set(list[i], list[i]);
-                icons.play();
-            };
 
             
     		$(function(){
@@ -156,21 +123,21 @@
      				//응답값
      				datatype: "json",
      				styleUI : 'Bootstrap',
-     			   	colNames:['구분','신청일시','프로젝트명','신청사유','Schema','Table','Column','진행상황','처리일','만료일','다운로드','재신청','처리','id'],
+     			   	colNames:['신청일시','프로젝트명','신청사유','Schema','Table','Column','진행','신청자','처리일','만료일','첨부','재신청','처리','id'],
      			   	colModel:[
-     			   		{name:'separation', index:'CheckResult',align: "center"},
-     			   		{name:'reqDt', index:'CheckResult',align: "center"},
-     			   		{name:'projectNm',align: "center"},
-     			   		{name:'reason',align: "left"},
-     			   		{name:'schema',align: "center"},
-     			   		{name:'table',align: "center"},
-     			   		{name:'column',align: "center"},
-     			   		{name:'status',align: "center"},
-     			  		{name:'processDt',align: "center"},
-     			  		{name:'validateDate',align: "center"},
-     			 		{name:'download',align: "center",formatter:download},
-     					{name:'reapplication',align: "center",formatter:reapplication},
-     					{name:'process',align: "center",formatter:processType, hidden:true},
+     			   		{name:'reqDt', index:'CheckResult',align: "center", sortable:false, width:"65"},
+     			   		{name:'projectNm',align: "left", sortable:false, width:"100"},
+     			   		{name:'reason',align: "left", sortable:false, width:"200"},
+     			   		{name:'schema',align: "left", sortable:false, width:"100"},
+     			   		{name:'table',align: "left", sortable:false, width:"100"},
+     			   		{name:'column',align: "left", sortable:false, width:"150"},
+     			   		{name:'status',align: "center", sortable:false, width:"30"},
+     					{name:'ownerId',align: "left", width:"60",hidden:true},
+     			  		{name:'processDt',align: "center", sortable:false, width:"60"},
+     			  		{name:'validateDate',align: "center", sortable:false, width:"60"},
+     			 		{name:'download',align: "center",formatter:download, sortable:false, width:"30"},
+     					{name:'reapplication',align: "center",formatter:reapplication, sortable:false, width:"50"},
+     					{name:'process',align: "center",formatter:processType, width:"50",hidden:true, sortable:false},
      					{name:'cryptoId',align: "center",hidden:true}
      			   	],
      			   viewrecords: true, 
@@ -179,10 +146,21 @@
                    height : 'auto',
                    autowidth : true,
                    shrinkToFit:true, 
-    			   viewrecords: true
+    			   viewrecords: true,
+    			   loadComplete : function(data){
+    				   <%
+	    		        	//TODO role에 따라서 변하도록 한다.
+	    		          	if(isProcess){
+	    		        	%>
+	    		        	$("#encList").hideCol("reapplication");
+	    		        	$("#encList").showCol("process");
+	    		        	$("#encList").showCol("ownerId");
+	    		        	<%
+	    		        	}
+	    		        %>    
+					}
      			});
      		});         
-
     		
     		var popWidth = 450;
     		var popHeight = 680;
@@ -190,15 +168,11 @@
 			var height = screen.height;
 			
     		function enc(){
-
     			var left = (screen.width/2)-(popWidth/2);
     			var top = (screen.height/2)-(popHeight/2);
-    			
     			var param = "width="+popWidth+",height="+popHeight+",left="+left+",top="+top;
-    			
     			window.open("<%=contextPath%>/encdec.do?type=enc","암호화 신청",param);
     		}
-    		
     		
     		function processType(value, options, rowObject){				//처리
     			
@@ -209,13 +183,17 @@
     		
     		function reapplication(value, options, rowObject){			//재신청
     			var cryptoId = rowObject.cryptoId;
-    			var radioHtml = "<p class='label label-inverse' style='width:100px; margin-top:15px; cursor:pointer;' onclick='javascript:reapplicationProcess(\""+cryptoId+"\");'>재신청</p>";
+    			var radioHtml = "<p class='label label-inverse' style='width:100px; margin-top:15px; cursor:pointer;' onclick='javascript:reapplicationProcess(\""+cryptoId+"\", \""+rowObject.status+"\");'>재신청</p>";
     			return radioHtml;
     			}
         		
-    		function reapplicationProcess(id){
-    			if(confirm("재신청 하시겠습니까?")){
-    				document.location.href = "<%=contextPath%>/reapplicationProcess.do?cryptoId="+id+"&type=enc";
+    		function reapplicationProcess(id, status){
+    			if(status == '승인'){
+    				alert('승인된 건은 재신청 할 수 없습니다.');
+    			}else{
+    				if(confirm("재신청 하시겠습니까?")){
+        				document.location.href = "<%=contextPath%>/reapplicationProcess.do?cryptoId="+id+"&type=enc";
+        			}
     			}
     		}
     		
@@ -237,7 +215,7 @@
     			var radioHtml ="";
     		
     			if(value != ""){
-    				var fileName = "fileDownload?fileName="+value;
+    				var fileName = "fileDownload?fileName="+value+"&userId="+rowObject.ownerId;
     	    		
         			radioHtml += "<form class=\"\" action=\""+fileName+"\" method=\"post\">";
         			radioHtml += "<i class='zmdi zmdi-download' onclick='javascirpt:fileDownload(this);' style='cursor:pointer;'></i>";
@@ -274,51 +252,7 @@
     			   var radioHtml = '<input type="radio" value=' + value + ' name="radioid" />';
     			   return radioHtml;
     		}
-    		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
 
-    	    }
-    	    
-    	    $(function () {
-    	        $('#datetimepicker6').datetimepicker({
-    	        	format: 'YYYY/MM/DD'
-    	        	
-    	        });
-    	        $('#datetimepicker7').datetimepicker({
-    	            useCurrent: false, //Important! See issue #1075
-    	            format: 'YYYY/MM/DD'
-    	        });
-    	        $("#datetimepicker6").on("dp.change", function (e) {
-    	            $('#datetimepicker7').data("DateTimePicker").minDate(e.date);
-    	        });
-    	        $("#datetimepicker7").on("dp.change", function (e) {
-    	            $('#datetimepicker6').data("DateTimePicker").maxDate(e.date);
-    	        });
-
-    	        <%
-    	        //TODO role에 따라서 변하도록 한다.
-    	          	String userId = (String)session.getAttribute("USER_ID");
-    	        	if(userId.equals("admin")){
-    	        	%>
-    	        	$("#encList").hideCol("reapplication");
-    	        	$("#encList").showCol("process");
-    	        	<%
-    	        	}
-    	        %>    
-    	        
-    	    }); 
-    	    
-function goEnc(){
-            	
-            	document.location.href = "<%=contextPath%>/ktMainPage11.do";
-            }
-    	    
         </script>
-    
-    
 </body>
 </html>

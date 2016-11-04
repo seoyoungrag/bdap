@@ -1,14 +1,15 @@
 package com.kt.bdapportal.domain;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.GenericGenerator;
+import com.kt.bdapportal.common.util.auth.NdapUser;
 
 @Entity
 @Table(name = "BDAP_USER")
@@ -16,8 +17,6 @@ public class BdapUser {
 
 	@Id
 	@Column(name = "USER_ID", nullable = false)
-	@GeneratedValue(generator = "inquisitive-uuid")
-	@GenericGenerator(name = "inquisitive-uuid", strategy = "com.kt.bdapportal.common.util.CustomIdGenerator")
 	private String userId;
 
 	@Column(name = "USER_EMAIL", nullable = false)
@@ -31,6 +30,9 @@ public class BdapUser {
 
 	@Column(name = "USER_LOGIN_ID", nullable = false)
 	private String userLoginId;
+	
+	@Column(name = "NDAP_ID", nullable = false)
+	private int ndapId;
 
 	public String getUserId() {
 		return userId;
@@ -71,5 +73,29 @@ public class BdapUser {
 	public void setUserLoginId(String userLoginId) {
 		this.userLoginId = userLoginId;
 	}
+	
+	
+	public int getNdapId() {
+		return ndapId;
+	}
 
+	public void setNdapId(int ndapId) {
+		this.ndapId = ndapId;
+	}
+
+	// 회원 가입용 메서드
+	public void setUserInfo(NdapUser ndapUser) {
+		SimpleDateFormat formatter = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss");
+		Calendar cal = Calendar.getInstance();
+		String today = "";
+		today = formatter.format(cal.getTime());
+		Timestamp ts = Timestamp.valueOf(today);
+		
+		this.userId = ndapUser.getUesrName();
+		this.userEmail = ndapUser.getEmail();
+		this.userNm = ndapUser.getUesrName();
+		this.userCreateDt = ts;
+		this.userLoginId = ndapUser.getUesrName();
+		this.ndapId = ndapUser.getId();
+	}
 }

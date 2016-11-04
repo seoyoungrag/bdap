@@ -13,4 +13,6 @@ public interface BdapColService {
 	public Long getColCountByColNm(String tblId,SearchVO searchVO);
 	public List<BdapCol> getBdapColListByTblId(String tblId);
 	public BdapCol updateCellColInfo(String id, String cellName, String cellValue);
+	public List<BdapCol> getBdapColListByColNm(String tblId, SearchVO searchVO);
+	public List<BdapCol> getBdapColListByTblIdAndIsPrivate(String colTblId);
 }

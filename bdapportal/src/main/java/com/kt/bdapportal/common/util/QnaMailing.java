@@ -28,8 +28,8 @@ public class QnaMailing {
 		Properties props = new Properties();
 		try{
 			props.load(NdapAuthentication.class.getClassLoader().getResourceAsStream("/ndap.properties"));
-        }
-        catch(Exception e){
+        }catch(Exception e){
+        	e.printStackTrace();
         }
         if(props != null){
         	smtpHost = props.getProperty(smtpHost);

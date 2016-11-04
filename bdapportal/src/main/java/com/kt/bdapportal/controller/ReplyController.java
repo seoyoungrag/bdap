@@ -30,6 +30,7 @@ import com.kt.bdapportal.domain.BdapBbsCategory;
 import com.kt.bdapportal.domain.BdapComment;
 import com.kt.bdapportal.domain.BdapFile;
 import com.kt.bdapportal.domain.BdapQna;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.service.BbsService;
 import com.kt.bdapportal.service.CategoryService;
 import com.kt.bdapportal.service.CommentService;
@@ -55,15 +56,14 @@ public class ReplyController {
 	private CategoryService categoryService;
 	
 	@RequestMapping("/reply/reg.do")						
-	public ModelAndView noticeReplyReg(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public ModelAndView noticeReplyReg(HttpServletRequest request, HttpServletResponse response) {
 				
 		ModelAndView mav = new ModelAndView("/reg/replyReg");
 		
 		try{
 			
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			String bbsPostId = (String)request.getParameter("bbsPostId");
 			String bbsType = (String)request.getParameter("bbsType");
 			
@@ -80,7 +80,7 @@ public class ReplyController {
 			bbs.setBbsHit(++hit);
 			bbs = bbsService.noticeInsert(bbs);
 			
- 	        String fileName = "";
+			StringBuffer fileName = new StringBuffer();
  	       
  	        List<BdapComment> bdapCmtList = commentService.getCommentList(bbsPostId);
  	        long cmtCount = commentService.countByCmtParentBbsId(bbsPostId); 
@@ -88,7 +88,7 @@ public class ReplyController {
 			
  	        if(bdapFileList.size() > 0){
  	        	String fileStorePath = BbsConstant.FILE_STORE_PATH+File.separator;
- 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+ 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
  				
  				File directory = new File(fileTempPath);
  		        if(directory.exists() == false){
@@ -119,13 +119,13 @@ public class ReplyController {
 					  
 					outputStream.close();
 					inputStream.close();
- 					fileName += bdapFile.getFleDisplayNm()+"*"; 
+					fileName.append(bdapFile.getFleDisplayNm()).append("*");
  				}
  	        }
  	        mav.addObject("bbsType", bbsType);
  	        mav.addObject("cmtCount", cmtCount);
  	       	mav.addObject("bdapCmtList", bdapCmtList);
-			mav.addObject("fileName", fileName);
+			mav.addObject("fileName", fileName.toString());
 			mav.addObject("bbsPostId", bbsPostId);
 			mav.addObject("title", bbs.getBbsTitle());
 			mav.addObject("systemName", bbs.getBbsCategory());
@@ -151,9 +151,7 @@ public class ReplyController {
 
 				HttpSession session = request.getSession();
 				
-				String userId = (String)session.getAttribute("USER_ID");
-				String userNm = (String)session.getAttribute("USER_NM");
-				String userMail = (String)session.getAttribute("USER_MAIL");
+				BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 				
 				request.setCharacterEncoding("UTF-8");
 				
@@ -222,9 +220,9 @@ public class ReplyController {
 				bdapBbs.setBbsParentBbsId(parentPostId);
 				bdapBbs.setBbsContent(content);
 				bdapBbs.setBbsHit(0);
-				bdapBbs.setBbsWriterId(userId);
-				bdapBbs.setBbsWriterEmail(userMail);
-				bdapBbs.setBbsWriterNm(userNm);
+				bdapBbs.setBbsWriterId(bdapUser.getUserId());
+				bdapBbs.setBbsWriterEmail(bdapUser.getUserEmail());
+				bdapBbs.setBbsWriterNm(bdapUser.getUserNm());
 				
 				bdapBbs = bbsService.noticeInsert(bdapBbs);
 				
@@ -232,7 +230,7 @@ public class ReplyController {
 				
 				if(fileList.length != 0 && fileListArr.contains("*")){
 					
-					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 					String filePath = BbsConstant.FILE_STORE_PATH+File.separator;
 					
 					File directory = new File(filePath);
@@ -287,14 +285,14 @@ public class ReplyController {
 		}
 	
 		@RequestMapping("/reply/mod.do")							
-		public ModelAndView noticeReplyMod(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		public ModelAndView noticeReplyMod(HttpServletRequest request, HttpServletResponse response)  {
 					
 			ModelAndView mav = new ModelAndView("/mod/replyMod");
 			
 			try{
 				
 				HttpSession session = request.getSession();
-				String userId = (String)session.getAttribute("USER_ID");
+				BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 				
 				String bbsPostId = (String)request.getParameter("bbsParentId");
 				String bbsChildId = (String)request.getParameter("bbsPostId");
@@ -314,8 +312,8 @@ public class ReplyController {
 				bbs.setBbsHit(++hit);
 				bbs = bbsService.noticeInsert(bbs);
 				
-	 	        String fileName = "";
-	 	        String fileNameForChild = "";
+				StringBuffer fileName = new StringBuffer();
+				StringBuffer fileNameForChild = new StringBuffer();
 	 	       
 	 	        List<BdapComment> bdapCmtList = commentService.getCommentList(bbsPostId);
 	 	        long cmtCount = commentService.countByCmtParentBbsId(bbsPostId); 
@@ -328,7 +326,7 @@ public class ReplyController {
 				
 	 	        if(bdapFileList.size() > 0){
 	 	        	String fileStorePath = BbsConstant.FILE_STORE_PATH+File.separator;
-	 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+	 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 	 				
 	 				File directory = new File(fileTempPath);
 	 		        if(directory.exists() == false){
@@ -359,14 +357,14 @@ public class ReplyController {
 						  
 						outputStream.close();
 						inputStream.close();
-	 					fileName += bdapFile.getFleDisplayNm()+"*"; 
+						fileName.append(bdapFile.getFleDisplayNm()).append("*");
 	 				}
 	 	        	
 	 	        }
 	 	        
 	 	       if(bdapFileListForChild.size() > 0){
 	 	        	String fileStorePath = BbsConstant.FILE_STORE_PATH+File.separator;
-	 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+	 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 	 				
 	 				File directory = new File(fileTempPath);
 	 		        if(directory.exists() == false){
@@ -398,14 +396,14 @@ public class ReplyController {
 						outputStream.close();
 						inputStream.close();
 	 					
-	 					fileNameForChild += bdapFile.getFleDisplayNm()+"*"; 
+						fileNameForChild.append(bdapFile.getFleDisplayNm()).append("*");
 	 				}
 	 	        	
 	 	        }
 	 	       
 	 	        mav.addObject("cmtCount", cmtCount);
 	 	       	mav.addObject("bdapCmtList", bdapCmtList);
-				mav.addObject("fileName", fileName);
+				mav.addObject("fileName", fileName.toString());
 				mav.addObject("bbsPostId", bbsPostId);
 				mav.addObject("bbsChildId", bbsChildId);
 				mav.addObject("title", bbs.getBbsTitle());
@@ -414,7 +412,7 @@ public class ReplyController {
 				mav.addObject("noticeView", bbs);
 				mav.addObject("cmtCountForChild", cmtCountForChild);
 	 	       	mav.addObject("bdapCmtListForChild", bdapCmtListForChild);
-				mav.addObject("fileNameForChild", fileNameForChild);
+				mav.addObject("fileNameForChild", fileNameForChild.toString());
 				mav.addObject("titleForChild", bbsChild.getBbsTitle());
 				mav.addObject("contentForChild", bbsChild.getBbsContent());
 				mav.addObject("noticeViewForChild", bbsChild);
@@ -434,7 +432,7 @@ public class ReplyController {
 			try{
 				
 				HttpSession session = request.getSession();
-				String userId = (String)session.getAttribute("USER_ID");
+				BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 				request.setCharacterEncoding("UTF-8");
 				
 				String title = (String)request.getParameter("replyTitle");
@@ -511,7 +509,7 @@ public class ReplyController {
 							
 				if(fileListArr.contains("*")){
 					
-					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 					String filePath = BbsConstant.FILE_STORE_PATH+File.separator;
 					
 					File directory = new File(filePath);

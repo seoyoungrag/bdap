@@ -13,6 +13,9 @@
   String test = (String)request.getAttribute("test");
   String contextPath = (String)request.getContextPath();
   SearchVO searchVO = (SearchVO)request.getAttribute("searchVO");
+  
+  boolean isAdmin = (Boolean)session.getAttribute("isAdmin");
+  boolean isProcess = (Boolean)session.getAttribute("isProcess");
 %>    
 <!DOCTYPE html>
 <html class=" js flexbox no-flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage no-websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients no-cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg no-smil svgclippaths">
@@ -45,9 +48,12 @@
                     	<div class="col-sm-5" style="">
 							<h4 class="m-t-0 header-title" style="padding:10px;"><b>공지사항</b></h4>
 						</div>
-						<div class="col-sm-7 text-right" style="padding-right:30px;">
+						
+						<%if(isAdmin){ %>
+                    	<div class="col-sm-7 text-right" style="padding-right:30px;">
 							<button class="btn btn-default waves-effect waves-light" type="button" onclick="javascript:goReg();" >등록</button>
 						</div>
+                    	<%} %>
 						<form class="form-horizontal" role="form" id="noticeSearchForm" method="post" action="<%=contextPath%>/notice/list.do" accept-charset="utf-8">
 						
 	                        <div class="col-sm-12" style="">
@@ -55,12 +61,12 @@
 	                        			<div class="row">
 	                        				<div class="col-md-11">
 	                        				<div class="row">
-	                        				<div class="col-md-2">
+	                        				<%-- <div class="col-md-2">
 	                        					<!-- <form class="form-horizontal" role="form"> -->
 		                                            <div class="form-group" style="margin-bottom:10px;">
 		                                                <label class="col-md-5 control-label" style="text-align:right;">시스템명:</label>
 		                                                <div class="col-md-4">
-			                                                <select class="selectpicker" name="category">                                  
+			                                                <select class="selectpicker" data-width="auto" name="category">                                  
 															  <option value="">전체</option>
 															  <option value="BDAP" <%=searchVO.getCategory().equals("BDAP")?"selected":"" %>>BDAP</option>
 															  <option value="KDAP" <%=searchVO.getCategory().equals("KDAP")?"selected":"" %>>KDAP</option>
@@ -69,13 +75,13 @@
 		                                                </div>
 		                                            </div>
 		                                        <!-- </form> -->
-	                        				</div>
+	                        				</div> --%>
 	                        				<div class="col-md-2">
 	                        					<!-- <form class="form-horizontal" role="form"> -->
 		                                            <div class="form-group" style="margin-bottom:10px;">
 		                                                <label class="col-md-5 control-label" style="text-align:right;">업무구분:</label>
 		                                                <div class="col-md-4">
-			                                                <select class="selectpicker" name="categorySub">
+			                                                <select class="selectpicker" data-width="auto" name="categorySub">
 															  <option value="normal" <%=searchVO.getCategorySub().equals("normal")?"selected":"" %>>일반</option>
 															  <option value="data" <%=searchVO.getCategorySub().equals("data")?"selected":"" %>>데이터</option>
 															  <option value="work" <%=searchVO.getCategorySub().equals("work")?"selected":"" %>>작업</option>
@@ -119,7 +125,7 @@
 	                        					<!-- <form class="form-horizontal" role="form"> -->
 		                                            <div class="form-group" style="margin-bottom:10px;">
 		                                                <div class="col-md-4">
-			                                                <select class="selectpicker" name="searchType" id="searchType">
+			                                                <select class="selectpicker" data-width="auto" name="searchType" id="searchType">
 															  <option value="TITLE" <%=searchVO.getSearchType().equals("TITLE")?"selected":"" %>>제목</option>
 															  <option value="WRITER" <%=searchVO.getSearchType().equals("WRITER")?"selected":"" %>>등록자</option>
 															</select>
@@ -165,13 +171,13 @@
 	                        		</div>
 	                        	</div>
                         	</form>
-                      		<div class="col-lg-12" >
+                      		<!-- <div class="col-lg-12" >
 								<div class="card-box">
                                     <div>
 										<table id="emergencyList" style="width:1750px;"></table>
                        				</div>
                        			</div>
-                       		</div>
+                       		</div> -->
                        		<div class="col-lg-12" >
 								<div class="card-box">
                                     <div>
@@ -253,13 +259,13 @@
      				multiselect: false,
      			   	colNames:['시스템명','업무구분','긴급','제목','등록자','id','등록일','등록자 아이디','부모아이디'],
      			   	colModel:[
-     			   		{name:'category', index:'CheckResult',align: "center", width:"100"},
-     			   		{name:'categorySub',align: "center", width:"100",formatter:subFormatter},
+     			   		{name:'category', index:'CheckResult',align: "center", width:"100",hidden:true},
+     			   		{name:'categorySub',align: "center", width:"100",formatter:subFormatter, sortable:false},
      			   		{name:'emer',align: "center", width:"100",hidden:true},
-     			   		{name:'title',align: "left", width:"400",formatter:emer},
-     			   		{name:'writer',align: "center", width:"100"},
+     			   		{name:'title',align: "left", width:"400",formatter:emer, sortable:false},
+     			   		{name:'writer',align: "left", width:"100", sortable:false},
      			   		{name:'noticeId',align: "center", width:"100",hidden:true},
-     			   		{name:'regDate',align: "center",width:"100"},
+     			   		{name:'regDate',align: "center",width:"100", sortable:false},
      			   		{name:'userId',align: "center",width:"100",hidden:true},
      			   		{name:'parentId',align: "center",width:"100",hidden:true}
      			   	],
@@ -281,44 +287,6 @@
      			});
      		});          
     		 
-             var param2 = "emergencyYn=Y";
-             
-    		 $(function(){
-     			$("#emergencyList").jqGrid({  
-     				//ajax 호출할 페이지
-     				url:'<%=contextPath%>/getNoticeList.do?'+param2,
-
-     				//로딩중일때 출력시킬 로딩내용
-     				loadtext : '로딩중..',
-     				//응답값
-     				datatype: "json",
-     				styleUI : 'Bootstrap',
-     				multiselect: false,
-     			   	colNames:['시스템명','업무구분','제목','등록자','등록일','id'],
-     			   	colModel:[
-     			   		{name:'category', index:'CheckResult',align: "center", width:"100"},
-     			   		{name:'categorySub',align: "center", width:"100",formatter:subFormatter},
-     			   		{name:'title',align: "left", width:"400",formatter:emer},
-     			   		{name:'writer',align: "center", width:"100"},
-     			   		{name:'regDate',align: "center", width:"100"},
-     			   		{name:'noticeId',align: "center", hidden:true}
-     			   	],
-     			   viewrecords: true, 
-                   rowNum : 5,
-                   height : 'auto',
-                   autowidth : true,
-                   shrinkToFit:true, 
-                   rownumbers: true,
-    			   viewrecords: true,
-			   	   onCellSelect : function(rowid,index,contents,event){
-			   			var cm = $(this).jqGrid('getGridParam','colModel');	
-			   			if(cm[index].name == 'title'){
-			   				var id = $(this).jqGrid('getRowData',rowid).noticeId;	//선택된 row의 id를 가져온다.
-				   			document.location.href = "<%=contextPath%>/notice/view.do?bbsPostId="+id;	
-			   			}
-			   		}
-     			});
-     		});    
     		function goReg(){
     			document.location.href = "<%=contextPath%>/notice/reg.do";
     		}

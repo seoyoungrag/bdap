@@ -52,4 +52,11 @@ public class BdapUserAclServiceImpl implements BdapUserAclService{
 			return bdapUserAclRepository.save(saveList);
 	}
 
+	
+	
+	public List<String> aclListByUserId(String userId){
+		List<String> aclList = new ArrayList<String>();
+		aclList = bdapUserAclRepository.aclListByUserId(userId);
+		return aclList;
+	}
 }

@@ -275,17 +275,16 @@
 	                                        </div>
                         				</div>
                         				
-                        				<div class="col-md-1">
+                        				<div class="col-md-2">
                         					<div class="form-horizontal" role="form">
 	                                            <div class="form-group" style="margin-bottom:10px;">
 	                                            	<div class="col-md-12 text-left">
-                                     					<button class="btn btn-primary waves-effect waves-light" type="button"  onclick="javascript:schemaManageSearch();" >검색</button>
+                                     					<button class="btn btn-primary waves-effect waves-light" type="button" onclick="javascript:schemaManageSearch();" >검색</button>
+	                                                	<button class="btn btn-primary waves-effect waves-light" type="button" onclick="uploadExcel();" >Import from Excel</button>
 	                                                </div>
 	                                            </div>
 	                                        </div>
                         				</div>
-                        				
-                        			
                         			</div>
                         				
                         				</div>
@@ -431,13 +430,13 @@
      				styleUI : 'Bootstrap',
      			   	colNames:[' ','사용자 명','사용자 ID'],
      			   	colModel:[
-                    	{name: 'radio', align: 'center', sortable: false,
+                    	{name: 'radio', align: 'center', sortable: false,width:30,
 	                        formatter: function (cellValue, option) {
 	                            return '<input type="radio" name="radio_' + option.gid + '"  />';
 	                        }
      			   		},
-     			   		{name:'userNm', index:'userNm',sortable:false, align: "center"},
-     			   		{name:'id', index:'id',sortable:false, align: "center", key:true}
+     			   		{name:'userNm', index:'userNm',sortable:false, align: "left",width:150},
+     			   		{name:'id', index:'id',sortable:false, align: "left", key:true,width:150}
      			   	],
      			    viewrecords: false, 
                     height : 'auto',
@@ -460,13 +459,13 @@
      				styleUI : 'Bootstrap',
      			   	colNames:[' ','권한 명','권한 ID'],
      			   	colModel:[
-     	                    	{name: 'radio', align: 'center', sortable: false,
+     	                    	{name: 'radio', align: 'center', sortable: false,width:30,
      		                        formatter: function (cellValue, option) {
      		                            return '<input type="radio" name="radio_' + option.gid + '"  />';
      		                        }
      	     			   		},
-     	     			   		{name:'roleNm',sortable:false, align: "center"},
-     	     			   		{name:'id', sortable:false, align: "center", key:true}
+     	     			   		{name:'roleNm',sortable:false, align: "left",width:150},
+     	     			   		{name:'id', sortable:false, align: "left", key:true,width:150}
      			   	],
      			   viewrecords: true, 
                    height : 'auto',
@@ -490,13 +489,13 @@
      				styleUI : 'Bootstrap',
      			   	colNames:[' ','권한 명','권한 ID'],
      			   	colModel:[
-     	                    	{name: 'radio', align: 'center', sortable: false,
+     	                    	{name: 'radio', align: 'center', sortable: false,width:30,
      		                        formatter: function (cellValue, option) {
      		                            return '<input type="radio" name="radio_' + option.gid + '"  />';
      		                        }
      	     			   		},
-     	     			   		{name:'roleNm',sortable:false, align: "center"},
-     	     			   		{name:'id', sortable:false, align: "center", key:true}
+     	     			   		{name:'roleNm',sortable:false, align: "left",width:150},
+     	     			   		{name:'id', sortable:false, align: "left", key:true,width:150}
      			   	],
      			   viewrecords: true, 
                    height : 'auto',
@@ -519,7 +518,7 @@
      				styleUI : 'Bootstrap',
      			   	colNames:['접근 가능 ACL','acl Id'],
      			   	colModel:[
-	     			   		{name:'aclList', index:'aclList',align: "center"},
+	     			   		{name:'aclList', index:'aclList',align: "left", sortable:false},
 	     			   		{name:'id', index:'id',align: "center",hidden:true}
      			   	],
      			   viewrecords: true, 
@@ -538,7 +537,7 @@
      				styleUI : 'Bootstrap',
      			   	colNames:['접근 가능 ACL','acl Id'],
      			   	colModel:[
-     	     			   		{name:'aclList', index:'aclList',align: "center"},
+     	     			   		{name:'aclList', index:'aclList',align: "left", sortable:false},
      	     			   		{name:'id', index:'id',align: "center",hidden:true}
      			   	],
      			   viewrecords: true, 
@@ -557,7 +556,7 @@
      				styleUI : 'Bootstrap',
      			   	colNames:['ROLE 부여 사용자','user Id'],
      			   	colModel:[
-   	     			   		{name:'userList', align: "center"},
+   	     			   		{name:'userList', align: "left", sortable:false},
  	     			   		{name:'id', align: "center",hidden:true}
      			   	],
      			   viewrecords: true, 
@@ -578,10 +577,10 @@
      				styleUI : 'Bootstrap',
      			   	colNames:['사용자 ID','사용자 명','Email','생성 일시','기본정보 수정'],
      			   	colModel:[
-     			   		{name:'id', index:'id',editable:false,align: "center", key:true},
-     			   		{name:'userNm', editable:true, align: "center"},
-     			   		{name:'email', editable:true, align: "center"},
-     			   		{name:'createDt', editable:false,align: "center"},
+     			   		{name:'id', index:'id',editable:false,align: "left", key:true, sortable:false},
+     			   		{name:'userNm', editable:true, align: "left", sortable:false},
+     			   		{name:'email', editable:true, align: "left", sortable:false},
+     			   		{name:'createDt', editable:false,align: "center", sortable:false},
      			   		{name:'4',align: "center", editable:false, hidden:true,
      			           formatter: 
      			        	   function(){
@@ -622,19 +621,19 @@
      			   	colNames:['tblId','스키마 명','테이블 영문명','테이블 한글명','일 적재 연동 대상','null 체크 대상','정합성 체크 대상','컬럼 정보','테이블 정보 수정'],
      			   	colModel:[
      			   		{name:'id', index:'id',editable:false,align: "center", key:true, hidden:true},
-     			   		{name:'schNm', index:'schNm', editable:false, align: "left"},
-	     			   	{name:'tblEngNm', index:'tblEngNm',editable:false, align: "left"},
-     			   		{name:'tblKorNm', index:'tblKorNm',editable:true, align: "left"},
-	     				{name:'isManaged',align: "center",edittype:'checkbox', editable:true, editoptions: { value:"Y:N"}, formatter: "checkbox", formatoptions: {disabled : false}},
-				   		{name:'isCheckNull',align: "center",edittype:'checkbox', editable:true, editoptions: { value:"Y:N"}, formatter: "checkbox", formatoptions: {disabled : false}},
-				   		{name:'isCehckRegex',align: "center",edittype:'checkbox', editable:true, editoptions: { value:"Y:N"}, formatter: "checkbox", formatoptions: {disabled : false}},
-     			   		{name:'column',align: "center",editable:false, 
+     			   		{name:'schNm', index:'schNm', editable:false, align: "left", sortable:false,width:"100"},
+	     			   	{name:'tblEngNm', index:'tblEngNm',editable:false, align: "left", sortable:false},
+     			   		{name:'tblKorNm', index:'tblKorNm',editable:true, align: "left", sortable:false},
+	     				{name:'isManaged',align: "center",edittype:'checkbox', editable:true, editoptions: { value:"Y:N"}, formatter: "checkbox", formatoptions: {disabled : false}, sortable:false,width:"80"},
+				   		{name:'isCheckNull',align: "center",edittype:'checkbox', editable:true, editoptions: { value:"Y:N"}, formatter: "checkbox", formatoptions: {disabled : false}, sortable:false,width:"80"},
+				   		{name:'isCehckRegex',align: "center",edittype:'checkbox', editable:true, editoptions: { value:"Y:N"}, formatter: "checkbox", formatoptions: {disabled : false}, sortable:false,width:"80"},
+     			   		{name:'column',align: "center",editable:false, sortable:false,width:"80", 
      			   			formatter:
 	     			   			function(cellValue, opts, rowObject) {
 	     			   				return '<p class="label label-inverse" style="width:100px; margin-top:15px; cursor:pointer;" onclick="javascript:columnPop(\''+rowObject.id+'\');">확인</p>';
 	     			   			},
      			   		},
-     			   		{name:'4',align: "center", editable:false, hidden:true,
+     			   		{name:'4',align: "center", editable:false, hidden:true, sortable:false,width:"80",
       			           formatter: 
       			        	   function(){
       			        	   		return '<p class="label label-inverse" style="width:100px; margin-top:15px; cursor:pointer;display:none;" onclick="javascript:goUserInfoMod();" name="tblInfoSave" >수정</p>'
@@ -1187,6 +1186,10 @@
 		    			postData : "schemaNm="+dbNm+"&tblNm="+tblNm
 		    		}).trigger("reloadGrid");
 			}
+			
+			function uploadExcel(){
+   				window.open("<%=contextPath%>/uploadExcel.do","upload_excel","width=530,height=150,scrollbar=false"); 
+   			}
         </script>
     
     <input type="hidden" id="selectId" value="">

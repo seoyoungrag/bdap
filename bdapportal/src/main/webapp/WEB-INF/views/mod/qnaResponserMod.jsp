@@ -634,14 +634,6 @@ String fileName = (String)request.getAttribute("fileName");
     			   return radioHtml;
     		}
     		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
-    	    
     	    $(function () {
     	    	
                 $('#datetimepicker1').datetimepicker({

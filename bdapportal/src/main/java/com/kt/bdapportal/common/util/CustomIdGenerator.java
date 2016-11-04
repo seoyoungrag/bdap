@@ -72,6 +72,8 @@ public class CustomIdGenerator extends UUIDGenerator{
         	prefix = "RUSR";
         }else if(entityName.contains("BdapRoleAcl")){
         	prefix = "RACL";
+        }else if(entityName.contains("MgmtComputingStat")){
+        	prefix = "COMP";
         }else{
         	prefix = entityName.length() > 0 ? entityName.substring(0, 4) : "EMPT";
         }

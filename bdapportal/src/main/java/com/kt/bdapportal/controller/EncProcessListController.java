@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.kt.bdapportal.common.util.Util;
 import com.kt.bdapportal.domain.BdapCrypto;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.service.BdapCryptoService;
 
 import net.sf.json.JSONArray;
@@ -47,6 +50,10 @@ public class EncProcessListController {
 	public void ktlist8(HttpServletRequest request, HttpServletResponse response) {
 		
 		try{
+
+			request.setCharacterEncoding("UTF-8");
+			HttpSession session = request.getSession();
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			
 			JSONObject jsonObj = new JSONObject();
 			
@@ -59,10 +66,21 @@ public class EncProcessListController {
 			JSONArray jsonArray = new JSONArray();
 			
 			List<BdapCrypto> bdapCryptoList = new ArrayList<BdapCrypto>();
+
+			if(Util.isProcess(request)){ 
+				bdapCryptoList = bdapCryptoService.getEncProcessList('E', startnum, rows);
+			}else{
+				bdapCryptoList = bdapCryptoService.getEncProcessList(bdapUser.getUserId(), 'E', startnum, rows);
+			}
 			
-			bdapCryptoList = bdapCryptoService.getEncProcessList('E',startnum,rows);
-			Long bdapCryptoListCount = bdapCryptoService.getEncProcessListCount('E');
-		
+			Long bdapCryptoListCount = 0L;
+			
+			if(Util.isProcess(request)){ // 암복호화 승인 권한이 있는지 확인한다. 승인 권한이 있다면 전체 리스트가 나와야 함.
+				bdapCryptoListCount = bdapCryptoService.getEncProcessListCount('E');
+			}else{
+				bdapCryptoListCount = bdapCryptoService.getEncProcessListCount(bdapUser.getUserId(), 'E');
+			}
+			
 			for(int i = 0; i < bdapCryptoList.size();i++){
 				JSONObject jsonObj1 = new JSONObject();
 				BdapCrypto bdapCrypto = bdapCryptoList.get(i);
@@ -78,11 +96,12 @@ public class EncProcessListController {
 					status = "반려";
 				}
 				jsonObj1.put("schemaNm",bdapCrypto.getCrtSrcDbNm());
-				jsonObj1.put("tableNm",bdapCrypto.getCrtCreateTblNm());
+				jsonObj1.put("tableNm",bdapCrypto.getCrtSrcTblNm());
 				jsonObj1.put("columnNm",bdapCrypto.getCrtDocNum());
 				jsonObj1.put("startDate",processDt);
 				jsonObj1.put("endDate",validateDt);
 				jsonObj1.put("status",status);
+				jsonObj1.put("ownerId",bdapCrypto.getCrtOwnerId());
 				
 				jsonArray.add(jsonObj1);
 			}

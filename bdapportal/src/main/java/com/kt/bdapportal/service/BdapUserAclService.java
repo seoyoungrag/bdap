@@ -9,5 +9,8 @@ public interface BdapUserAclService {
 	
 	List<BdapUserAcl> getBdapUserAcl(SearchVO searchVO);
 	List<BdapUserAcl> updateUserAcl(BdapUserAcl bdapUserAclList);
+	List<String> aclListByUserId(String userId);
+	
+	
 	
 }

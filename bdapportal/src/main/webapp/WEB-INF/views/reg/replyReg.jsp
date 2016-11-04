@@ -155,6 +155,8 @@
 
         </div>
         <!-- END wrapper -->
+        <link rel="stylesheet" href="<%=contextPath%>/resources/kt/css/dropzone.css" />
+        
 		<!-- jqeury  -->
         <script src="<%=contextPath%>/resources/kt/js/jquery.min.js"></script>
         <script src="<%=contextPath%>/resources/js/jquery-ui.js" type="text/javascript"></script>
@@ -422,14 +424,6 @@
     			   var radioHtml = '<input type="radio" value=' + value + ' name="radioid" />';
     			   return radioHtml;
     		}
-    		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
     	    
     	    $(function () {
     	        $('#datetimepicker6').datetimepicker({

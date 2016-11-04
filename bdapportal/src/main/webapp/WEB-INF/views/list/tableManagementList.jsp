@@ -1,3 +1,4 @@
+<%@page import="com.kt.bdapportal.domain.BdapTbl"%>
 <%@ page language="java" contentType="text/html; charset=utf-8"
     pageEncoding="utf-8"%>
 <%@ page import="java.util.*"%>
@@ -8,7 +9,7 @@
   String contextPath = (String)request.getContextPath();
   
   @SuppressWarnings (value="unchecked")
-	List<MgmtTblStat> mgmtTblStatDbList = (List<MgmtTblStat>)request.getAttribute("mgmtTblStatDbList");
+  List<String> tblList = (List<String>)request.getAttribute("tblList");
   SearchVO searchVO = (SearchVO)request.getAttribute("searchVO");
 %>    
     
@@ -57,10 +58,11 @@
 	                                            <div class="form-group" style="margin-bottom:10px;">
 	                                                <label class="col-md-5 control-label" style="text-align:right;">Schema 선택 :</label>
 	                                                <div class="col-md-7">
-		                                                <select class="selectpicker" name="schema" id="schema">
-															<%for(int i = 0; i < mgmtTblStatDbList.size(); i++){ 
-			                                                	MgmtTblStat mgmtTblStat = 	mgmtTblStatDbList.get(i);%>
-			                                                	<option value="<%=mgmtTblStat.getDbName() %>"  <%=searchVO.getSearchWord().equals(mgmtTblStat.getDbName())?"selected":"" %> ><%=mgmtTblStat.getDbName() %></option>
+		                                                <select class="selectpicker" data-width="auto" name="schema" id="schema">
+															<option value="" >전체</option>
+															<%for(int i = 0; i < tblList.size(); i++){ 
+			                                                	String schemeName = 	tblList.get(i);%>
+			                                                	<option value="<%=schemeName%>"  <%=searchVO.getSearchWord().equals(schemeName)?"selected":"" %> ><%=schemeName%></option>
 			                                                <%} %>
 														</select>
 	                                                </div>
@@ -148,7 +150,6 @@
                                     <div class="table-responsive">
 
 	                       				<table id="tableManagementList" style="width:100%;"></table>
-	                       				 <!-- <div id="jqGridPager"></div> -->
                        				</div>
                        			</div>
                        	</div>
@@ -178,7 +179,22 @@
 
         <script type="text/javascript">
             jQuery(document).ready(function($) {
-            });
+				$(".bootstrap-select").css("width","100%"); 
+				
+				$('#datetimepicker6').datetimepicker({
+					format: 'YYYY/MM/DD'
+				});
+				$('#datetimepicker7').datetimepicker({
+					useCurrent: false, //Important! See issue #1075
+					format: 'YYYY/MM/DD'
+				});
+				$("#datetimepicker6").on("dp.change", function (e) {
+					$('#datetimepicker7').data("DateTimePicker").minDate(e.date);
+				});
+				$("#datetimepicker7").on("dp.change", function (e) {
+					$('#datetimepicker6').data("DateTimePicker").maxDate(e.date);
+				});
+			});
 
             var param = "&searchWord=<%=searchVO.getSearchWord()%>";
             
@@ -195,19 +211,17 @@
      				styleUI : 'Bootstrap',
      			   	colNames:['Schema','적재 테이블(Managed)','생성일자', '사이즈', '건수','유효기간','id','유효기간 수정'],
      			   	colModel:[
-    					/* {name:'row',align: "center", key: true,formatter:'checkbox', editable: true, edittype: 'checkbox', editoptions: { value: "True:False" }, formatoptions: { disabled: false},width:"30"}, */
-     			   		/* {name:'row', index:'CheckResult',align: "center",formatter: radio }, */
-     			   		{name:'schema', index:'CheckResult',align: "center"},
-     			   		{name:'table',align: "center"},
-     			   		{name:'createDt',align: "center"},
-     			   		{name:'size',align: "center", formatter:'integer',formatoptions:{thousandsSeparator:','},summaryType:'sum'},
-     			   		{name:'count',align: "center", formatter:'integer',formatoptions:{thousandsSeparator:','},summaryType:'sum'},
-     			   		{name:'validateDate',align: "center"},
+     			   		{name:'schema', index:'CheckResult',align: "center", sortable:false, width:"100"},
+     			   		{name:'table',align: "left", sortable:false},
+     			   		{name:'createDt',align: "center", sortable:false},
+     			   		{name:'size',align: "right", sortable:false, formatter:'integer',formatoptions:{thousandsSeparator:','},summaryType:'sum'},
+     			   		{name:'count',align: "right", sortable:false, formatter:'integer',formatoptions:{thousandsSeparator:','},summaryType:'sum'},
+     			   		{name:'validateDate',align: "center", sortable:false},
 	     			   	{name:'tblId',align: "center",hidden:true}, 			   		
-     			   		{name:'validateDateMod',align: "center",formatter: editable}
+     			   		{name:'validateDateMod',align: "center",formatter: editable, sortable:false, width:"100"}
      			   	],
      			   viewrecords: true, 
-                   rowNum : 15,
+                   rowNum : 10000,
                    height : 'auto',
                    autowidth : true,
                    shrinkToFit:true, 
@@ -244,7 +258,7 @@
  		
     		function expirationDateModi(tblId){
     			
-    			 window.open("<%=contextPath%>/expirationDateModi.do?tblId="+tblId,"유효기간 수정","width=420,height=160,scrollbar=false"); 
+    			 window.open("<%=contextPath%>/expirationDateModi.do?tblId="+tblId,"유효기간 수정","width=530,height=210,scrollbar=false"); 
     			
     		}
     		
@@ -254,41 +268,12 @@
     			   return radioHtml;
     			}
     		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
     	    
     	    function goSearch(){
     	    	$("#tableManagementSearchForm").submit();
     	    }
     	    
-    	    $(window).load(function(){
-   	    		
-	    		 $(".bootstrap-select").css("width","100%"); 
-	    	});
-    	    
-    	    $(function () {
-    	        $('#datetimepicker6').datetimepicker({
-    	        	format: 'YYYY/MM/DD'
-    	        	
-    	        });
-    	        $('#datetimepicker7').datetimepicker({
-    	            useCurrent: false, //Important! See issue #1075
-    	            format: 'YYYY/MM/DD'
-    	        });
-    	        $("#datetimepicker6").on("dp.change", function (e) {
-    	            $('#datetimepicker7').data("DateTimePicker").minDate(e.date);
-    	        });
-    	        $("#datetimepicker7").on("dp.change", function (e) {
-    	            $('#datetimepicker6').data("DateTimePicker").maxDate(e.date);
-    	        });
-    	    }); 
-    	    
-function goEnc(){
+			function goEnc(){
             	
             	document.location.href = "<%=contextPath%>/ktMainPage11.do";
             }

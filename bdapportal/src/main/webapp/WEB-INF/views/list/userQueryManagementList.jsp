@@ -49,17 +49,17 @@
 		                                            <div class="form-group" style="margin-bottom:10px;">
 		                                            	<label class="col-md-5 control-label" style="text-align:right;">수행시간:</label>
 		                                                <div class="col-md-4">
-			                                                <select class="selectpicker" id="term" name="term">
-			                                                  <option value="0" <%=searchVO.getTerm()==0?"selected":"" %>>1시간이내</option>
-															  <option value="1" <%=searchVO.getTerm()==1?"selected":"" %>>1시간</option>
-															  <option value="2" <%=searchVO.getTerm()==2?"selected":"" %>>2시간</option>
-															  <option value="3" <%=searchVO.getTerm()==3?"selected":"" %>>3시간</option>
-															  <option value="4" <%=searchVO.getTerm()==4?"selected":"" %>>4시간</option>
-															  <option value="5" <%=searchVO.getTerm()==5?"selected":"" %>>5시간</option>
-															  <option value="6" <%=searchVO.getTerm()==6?"selected":"" %>>6시간</option>
-															  <option value="7" <%=searchVO.getTerm()==7?"selected":"" %>>7시간</option>
-															  <option value="8" <%=searchVO.getTerm()==8?"selected":"" %>>8시간</option>
-															  <option value="9" <%=searchVO.getTerm()==9?"selected":"" %>>9시간이상</option>
+			                                                <select class="selectpicker" id="termTime" name="termTime">
+			                                                  <option value="0" <%=searchVO.getTermTime()==0?"selected":"" %>>1시간이내</option>
+															  <option value="1" <%=searchVO.getTermTime()==1?"selected":"" %>>1시간</option>
+															  <option value="2" <%=searchVO.getTermTime()==2?"selected":"" %>>2시간</option>
+															  <option value="3" <%=searchVO.getTermTime()==3?"selected":"" %>>3시간</option>
+															  <option value="4" <%=searchVO.getTermTime()==4?"selected":"" %>>4시간</option>
+															  <option value="5" <%=searchVO.getTermTime()==5?"selected":"" %>>5시간</option>
+															  <option value="6" <%=searchVO.getTermTime()==6?"selected":"" %>>6시간</option>
+															  <option value="7" <%=searchVO.getTermTime()==7?"selected":"" %>>7시간</option>
+															  <option value="8" <%=searchVO.getTermTime()==8?"selected":"" %>>8시간</option>
+															  <option value="9" <%=searchVO.getTermTime()==9?"selected":"" %>>9시간이상</option>
 															</select>
 		                                                </div>
 		                                            </div>
@@ -69,10 +69,11 @@
 		                                            <div class="form-group" style="margin-bottom:10px;">
 		                                                <label class="col-md-5 control-label" style="text-align:right;">쿼리결과:</label>
 		                                                <div class="col-md-4">
-			                                                <select class="selectpicker" id="term" name="term">
-			                                                  <option value="0" <%=searchVO.getTerm()==0?"selected":"" %>>성공</option>
-															  <option value="1" <%=searchVO.getTerm()==1?"selected":"" %>>실패</option>
-															  <option value="2" <%=searchVO.getTerm()==2?"selected":"" %>>정지</option>
+			                                                <select class="selectpicker" id="termStatus" name="termStatus">
+			                                                  <option value="" <%=searchVO.getTermStatus().equals("")?"selected":"" %>>전체</option>
+			                                                  <option value="SUCCEEDED" <%=searchVO.getTermStatus().equals("SUCCEEDED")?"selected":"" %>>성공</option>
+															  <option value="FAILED" <%=searchVO.getTermStatus().equals("FAILED")?"selected":"" %>>실패</option>
+															  <option value="RUNNING" <%=searchVO.getTermStatus().equals("RUNNING")?"selected":"" %>>진행중</option>
 															</select>
 		                                                </div>
 		                                            </div>
@@ -155,47 +156,22 @@
         <!-- jqgrid -->
         <script src="<%=contextPath%>/resources/jqgrid/js/jquery.jqGrid.min.js" type="text/ecmascript"></script>
 		<script src="<%=contextPath%>/resources/jqgrid/js/i18n/grid.locale-kr.js" type="text/ecmascript"></script> 
+		<!-- custom -->
+		<script src="<%=contextPath%>/resources/kt/js/common.js" type="text/javascript"></script> 
         
-        <%-- 
-		<script src="<%=contextPath%>/resources/kt/js/jquery.app.js"></script>
-		<script src="<%=contextPath%>/resources/kt/js/fastclick.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/detect.js"></script>
-        
-        <script src="<%=contextPath%>/resources/kt/js/jquery.slimscroll.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/jquery.blockUI.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/waves.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/wow.min.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/jquery.nicescroll.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/jquery.scrollTo.min.js"></script>
-        <script src="<%=contextPath%>/resources/kt/plugins/switchery/switchery.min.js"></script>
-        <script src="<%=contextPath%>/resources/kt/js/bootstrap-treeview.js"></script>
-        
-        <!-- Counter Up  -->
-        <script src="<%=contextPath%>/resources/kt/lib/jquery.waypoints.js"></script>
-        <script src="<%=contextPath%>/resources/kt/plugins/counterup/jquery.counterup.min.js"></script>
-
-        <!-- circliful Chart -->
-        <script src="<%=contextPath%>/resources/kt/plugins/jquery-circliful/js/jquery.circliful.min.js"></script>
-        <script src="<%=contextPath%>/resources/kt/plugins/jquery-sparkline/jquery.sparkline.min.js"></script>
-
-        <!-- skycons -->
-        <script src="<%=contextPath%>/resources/kt/plugins/skyicons/skycons.min.js" type="text/javascript"></script>
-        
-        <!-- Page js  -->
-        <script src="<%=contextPath%>/resources/kt/pages/jquery.dashboard.js"></script>
-		--%>
-
         <script type="text/javascript">
         	var contextPath = '<%=contextPath%>';
         	var searchType = $(":input:radio[name=searchType]:checked").val();
-        	var term = $("#term option:selected").val();
+        	var termTime = $("#termTime option:selected").val();
+        	var termStatus = $("#termStatus option:selected").val();
         	var defaultStartDate = '<%=searchVO.getStartDate()%>';
         	var defaultEndDate = '<%=searchVO.getEndDate()%>';
         	
 			// 개인정보를 선택했을때에만 다른 테이블을 조회해야 한다. 식별하기 편하도록 url로 구분한다.
         	var url = (searchType=='personal')?contextPath+'/getUserPersonalQueryManagementList.do?' : contextPath+'/getUserQueryManagementList.do?';
         	var param = "searchType="+searchType+"&startDate="+defaultStartDate+"&endDate="+defaultEndDate;
-        	param += (searchType=='longterm')?"&term="+term:"";
+        	//param += (searchType=='longterm')?"&term="+term:"";
+        	param += "&termTime="+termTime+"&termStatus="+termStatus;
         	
         	jQuery(document).ready(function($) {
 	            $(function () {
@@ -234,12 +210,12 @@
      				styleUI : 'Bootstrap',
      			   	colNames:['수행자','쿼리','시작시간', '완료시간', '수행시간','결과'],
      			   	colModel:[
-     			   		{name:'user', index:'CheckResult',align: "center"},
-     			   		{name:'query',align: "left",formatter:editable},
-     			   		{name:'startTime',align: "center"},
-     			   		{name:'endTime',align: "center"},
-     			   		{name:'term',align: "center"},
-     			   		{name:'result',align: "center"}
+     			   		{name:'user', index:'CheckResult',align: "left",width:"120", sortable:false},
+     			   		{name:'query',align: "left",formatter:editable,width:"800", sortable:false},
+     			   		{name:'startTime',align: "center",width:"120", sortable:false},
+     			   		{name:'endTime',align: "center",width:"120", sortable:false},
+     			   		{name:'term',align: "right",width:"150", sortable:false, formatter:Format.millisecondsToTime},
+     			   		{name:'result',align: "center",width:"80", sortable:false, formatter:Format.resultToString}
      			   	],
      			   viewrecords: true, 
                    pager: "#gridPager",
@@ -262,7 +238,7 @@
     	    	rowCount++;
     	    	var radioHtml = "";
     	    	
-    	    	if(value.length > 45){
+    	    	if(value.length > 145){
     	    		radioHtml ='<div><div id='+rowCount+' style="width:90%; float:left; height:20px; overflow-y:hidden; overflow-x:hidden; white-space:nowrap; text-overflow:ellipsis;" toggle="off">';
     	    		radioHtml += value;	
     	    		radioHtml += '</div><span class="pull-right" style="margin-left: -10px; float:right; cursor: pointer; padding-bottom:-20px;" onclick="rowToggle(this)" ><i class="zmdi zmdi-plus-circle-o"></i></span></div>';	

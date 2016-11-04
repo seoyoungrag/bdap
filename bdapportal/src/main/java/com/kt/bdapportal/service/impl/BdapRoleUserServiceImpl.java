@@ -23,19 +23,38 @@ public class BdapRoleUserServiceImpl implements BdapRoleUserService{
 	public List<BdapRoleUser> getBdapRoleUserList(SearchVO searchVO) {
 		List<BdapRoleUser> bdapRoleUserList = new ArrayList<BdapRoleUser>();
 		if(!searchVO.getRoleId().equals("")){
-			BdapRole br = new BdapRole();
+			BdapRole br = new BdapRole(); 
 			br.setRoleId(searchVO.getRoleId());
 			bdapRoleUserList = bdapRoleUserRepository.getUserListByRoleId(br);
 		}
 		return bdapRoleUserList;
 	}
+	
+	@Override
+	public BdapRoleUser getRoleIdByUserId(BdapUser bdapUser) {
+		BdapRoleUser bdapRoleUser = bdapRoleUserRepository.getRoleIdByUserId(bdapUser);
+		return bdapRoleUser;
+	}
+	
+	@Override
+	public BdapRoleUser insert(BdapRoleUser bdapRoleUser) {
+		bdapRoleUserRepository.save(bdapRoleUser);
+		return bdapRoleUser;
+	}
 
 	@Override
 	public List<BdapRoleUser> updateRoleUser(BdapRoleUser bdapRoleUser) {
-		List<BdapRoleUser> old = bdapRoleUserRepository.getUserListByRoleId(bdapRoleUser.getRoleId());
+		//1. 사용자 id를 기준으로 리턴되는 roleuser id를 가져온다.
+		List<BdapRoleUser> old = bdapRoleUserRepository.getUserListByUserIdIn(bdapRoleUser.getBdapUser());
 		if(old!=null){
 			bdapRoleUserRepository.delete(old);
 		}
+		//2. 가져온 roleuserid를 삭제한다.
+		//3. 인서트 한다.
+		/*List<BdapRoleUser> old = bdapRoleUserRepository.getUserListByRoleId(bdapRoleUser.getRoleId());
+		if(old!=null){
+			bdapRoleUserRepository.delete(old);
+		}*/
 		List<BdapRoleUser> saveList = new ArrayList<BdapRoleUser>();
 		if(!bdapRoleUser.getBdapUser().isEmpty()){
 			for(BdapUser user : bdapRoleUser.getBdapUser()){

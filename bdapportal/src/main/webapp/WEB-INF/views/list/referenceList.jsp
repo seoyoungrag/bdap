@@ -13,6 +13,9 @@
   String test = (String)request.getAttribute("test");
   String contextPath = (String)request.getContextPath();
   SearchVO searchVO = (SearchVO)request.getAttribute("searchVO");
+  
+  boolean isAdmin = (Boolean)session.getAttribute("isAdmin");
+  boolean isProcess = (Boolean)session.getAttribute("isProcess");
 %>    
     
 <!DOCTYPE html>
@@ -52,11 +55,11 @@
 						<div class="col-sm-5" style="">
 							<h4 class="m-t-0 header-title" style="padding:10px;"><b>자료실</b></h4>
 						</div>
-						<div class="col-sm-7 text-right" style="padding-right:30px;">
+						<%if(isAdmin){ %>
+                    	<div class="col-sm-7 text-right" style="padding-right:30px;">
 							<button class="btn btn-default waves-effect waves-light" type="button" onclick="javascript:goReg();" >등록</button>
-                            <!-- <button class="btn btn-default waves-effect waves-light" type="button" onclick="javascript:goMod();" >수정</button>
-                            <button class="btn btn-default waves-effect waves-light" type="button" onclick="javascript:goDel();" >삭제</button> -->
 						</div>
+                    	<%} %>
                         <div class="col-sm-12" style="">
                         		<div class="card-box" style="margin-bottom:10px; padding-bottom:0px;">
                         			<div class="row">
@@ -238,12 +241,12 @@
      			   	colModel:[
     					/* {name:'row',align: "center", key: true,formatter:'checkbox', editable: true, edittype: 'checkbox', editoptions: { value: "True:False" }, formatoptions: { disabled: false},width:"30"}, */
      			   		/* {name:'row', index:'CheckResult',align: "center", width:"50"}, */
-     			   		{name:'category', index:'CheckResult',align: "center", width:"100",formatter:subFormatter},
-     			   		{name:'title',align: "left", width:"500",formatter:title},
+     			   		{name:'category', index:'CheckResult',align: "center", width:"100",formatter:subFormatter, sortable:false},
+     			   		{name:'title',align: "left", width:"500",formatter:title, sortable:false},
      			   		{name:'postId',align: "center", width:"100",hidden:true},
-     			   		{name:'writerNm',align: "center", width:"100"},
-     			   		{name:'regDate',align: "center", width:"100"},
-     			   		{name:'postHit',align: "center",width:"50"},
+     			   		{name:'writerNm',align: "left", width:"100", sortable:false},
+     			   		{name:'regDate',align: "center", width:"100", sortable:false},
+     			   		{name:'postHit',align: "center",width:"50", sortable:false},
      			   		{name:'parentId',align: "center",width:"100",hidden:true}
      			   		
      			   	],
@@ -355,14 +358,6 @@
     			   return radioHtml;
     			}
     		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
-    	    
     	    $(function () {
     	        $('#datetimepicker6').datetimepicker({
     	        	format: 'YYYY/MM/DD'

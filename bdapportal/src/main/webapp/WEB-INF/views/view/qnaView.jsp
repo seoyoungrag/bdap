@@ -1,6 +1,6 @@
+<%@page import="com.kt.bdapportal.domain.BdapUser"%>
 <%@ page language="java" contentType="text/html; charset=utf-8"
     pageEncoding="utf-8"%>
-
 <%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
@@ -11,18 +11,22 @@
 <%@page import="com.kt.bdapportal.domain.BdapBbs"%>
 <%@page import="com.kt.bdapportal.domain.BdapQna"%>    
 <%@page import="com.kt.bdapportal.domain.BdapComment"%>
- <%@page import="com.kt.bdapportal.common.util.BbsConstant"%>
+<%@page import="com.kt.bdapportal.common.util.BbsConstant"%>
 <%
-String fileTempPath = BbsConstant.FILE_TEMP_PATH;
-String fileStorePath = BbsConstant.FILE_STORE_PATH;
-  BdapBbs bbs = (BdapBbs)request.getAttribute("qnaView");
-  BdapQna bbsSub = (BdapQna)request.getAttribute("qnaSubView");
-  String fileName = (String)request.getAttribute("fileName"); 
-  String test = (String)request.getAttribute("test");
-  String contextPath = (String)request.getContextPath();
-  String bbsPostId = (String)request.getAttribute("bbsPostId");
-  Long cmtCount = (Long)request.getAttribute("cmtCount");
-  ArrayList<BdapComment> bdapCmtList = (ArrayList<BdapComment>) request.getAttribute("bdapCmtList");
+	BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
+	boolean isAdmin = (Boolean)session.getAttribute("isAdmin");
+	String fileTempPath = BbsConstant.FILE_TEMP_PATH;
+	String fileStorePath = BbsConstant.FILE_STORE_PATH;
+	BdapBbs bbs = (BdapBbs)request.getAttribute("qnaView");
+	BdapQna bbsSub = (BdapQna)request.getAttribute("qnaSubView");
+	String fileName = (String)request.getAttribute("fileName"); 
+	String test = (String)request.getAttribute("test");
+	String contextPath = (String)request.getContextPath();
+	String bbsPostId = (String)request.getAttribute("bbsPostId");
+	Long cmtCount = (Long)request.getAttribute("cmtCount");
+	ArrayList<BdapComment> bdapCmtList = (ArrayList<BdapComment>) request.getAttribute("bdapCmtList");
+	  
+	boolean isProcess = (Boolean)session.getAttribute("isProcess");
 %>    
     
 <!DOCTYPE html>
@@ -35,21 +39,11 @@ String fileStorePath = BbsConstant.FILE_STORE_PATH;
 <form name="tx_editor_form" id="tx_editor_form" action="" method="post" accept-charset="utf-8"></form>
         <!-- Begin page -->
         <div id="wrapper">
-        
-                  <!-- Top Bar Start -->
+            <!-- Top Bar Start -->
             <div class="topbar">
 				<jsp:include page="/WEB-INF/views/topmenu.jsp" flush="true"/>                    
             </div>
             <!-- Top Bar End -->
-
-
-            <!-- ========== Left Sidebar Start ========== -->
-            <%-- <div class="left side-menu">
-               <jsp:include page="/WEB-INF/views/leftmenu.jsp" flush="true"/>
-            </div> --%>
-            <!-- Left Sidebar End --> 
-
-
 
             <!-- ============================================================== -->
             <!-- Start right Content here -->
@@ -144,7 +138,7 @@ String fileStorePath = BbsConstant.FILE_STORE_PATH;
 									<div style="left: -100000px; position: absolute; opacity: 0;" contenteditable="true"><br></div><div class="inline-editor note-air-editor note-editable panel-body" id="note-editor-1" contenteditable="false">
 									<%String[]  fileNameArr = fileName.split("\\*");
 										for(int i = 0;i < fileNameArr.length; i++ ){ %>
-											<form class="" action="../fileDownload?fileName=<%=fileNameArr[i]%>" method="post" >
+											<form class="" action="../fileDownload?fileName=<%=fileNameArr[i]%>&userId=<%=bbs.getBbsWriterId()%>" method="post" >
 											<div class="col-md-6">
 												<div class="col-md-6">
 	                                				<p><%= fileNameArr[i] %></p>
@@ -162,11 +156,13 @@ String fileStorePath = BbsConstant.FILE_STORE_PATH;
 							<label class="col-md-3 control-label" style="text-align:left;">댓글(<span id="cmtCount"><%=cmtCount%></span>)</label>	
 							<div class="col-sm-9 text-right" style="">
 								<button class="btn-sm btn-default waves-effect waves-light inline" type="button" style="margin-top:-10px;" onclick="javascript:goList();">목록</button>
-								<%if(bbs.getBbsParentBbsId() == null || bbs.getBbsParentBbsId().equals("")){ %>
+								<%if(isProcess && ( bbs.getBbsParentBbsId() == null || bbs.getBbsParentBbsId().equals("") )){ %>
 									<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="margin-top:-10px;" onclick="javascript:goReply();">답글</button>
 								<%} %>
+								<%if(isAdmin){ %>
 								<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="margin-top:-10px;" onclick="javascript:goMod();">수정</button>
 								<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="margin-top:-10px;" onclick="javascript:goDelete();">삭제</button>
+								<%} %>
 							</div>
 							
 							
@@ -200,9 +196,11 @@ String fileStorePath = BbsConstant.FILE_STORE_PATH;
 												<div class="col-sm-2 text-right" style="">
 												</div>
 										    	<div class="col-sm-2 text-right" style="margin-top:12px;">
-													<button class="btn-sm btn-default waves-effect waves-light inline" id="" type="button" value="<%=bdapCmtList.get(i).getCmtId()%>" onclick="javascript:commentMod(this);">수정</button>
-													<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="" value="<%=bdapCmtList.get(i).getCmtId()%>" onclick="javascript:commentDel(this);">삭제</button>
-												</div>
+													<%if(bdapCmtList.get(i).getCmtWriterId().equals(bdapUser.getUserId()) || isAdmin){%>
+										    			<button class="btn-sm btn-inverse waves-effect waves-light inline" id="" type="button" value="<%=bdapCmtList.get(i).getCmtId()%>" onclick="javascript:commentMod(this);">수정</button>
+														<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="" value="<%=bdapCmtList.get(i).getCmtId()%>" onclick="javascript:commentDel(this);">삭제</button>
+										    		<%} %>
+										    	</div>
 											</div>
 										<%} %>
 								<%} %>
@@ -442,13 +440,6 @@ String fileStorePath = BbsConstant.FILE_STORE_PATH;
     			   return radioHtml;
     		}
     		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
     	    
     	    $(function () {
     	    	

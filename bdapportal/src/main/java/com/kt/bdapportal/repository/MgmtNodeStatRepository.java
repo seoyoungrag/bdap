@@ -22,4 +22,10 @@ public interface MgmtNodeStatRepository extends JpaRepository<MgmtNodeStat, Stri
 	
 	@Query(value="SELECT NODE_STAT_ID,DATE_FORMAT(NODE_STAT_CREATE_DT,'%Y/%m/%d %H:%i:%s') as NODE_STAT_CREATE_DT,NODE_STAT_TYPE,NODE_STAT_AVAIL_VAL,NODE_NM,NODE_STAT_TOTAL_VAL  FROM MGMT_NODE_STAT WHERE NODE_STAT_TYPE = 'COM' AND DATE_FORMAT(NODE_STAT_CREATE_DT,'%Y/%m/%d') = :#{#searchVO.endDate} ORDER BY NODE_STAT_CREATE_DT DESC LIMIT :#{#searchVO.startNum}, :#{#searchVO.rows}", nativeQuery = true)
 	public List<MgmtNodeStat> computingStat(@Param("searchVO") SearchVO searchVO);
+	
+	@Query(value="SELECT count(*)  FROM MGMT_NODE_STAT WHERE NODE_STAT_TYPE = 'COM' AND DATE_FORMAT(NODE_STAT_CREATE_DT,'%Y/%m/%d') = :#{#searchVO.endDate}", nativeQuery = true)
+	public Long computingStatCount(@Param("searchVO") SearchVO searchVO);
+	
+	@Query(value="SELECT NODE_STAT_ID,DATE_FORMAT(NODE_STAT_CREATE_DT,'%Y/%m/%d %H:%i:%s') as NODE_STAT_CREATE_DT,NODE_STAT_TYPE,NODE_STAT_AVAIL_VAL,NODE_NM,NODE_STAT_TOTAL_VAL  FROM MGMT_NODE_STAT WHERE NODE_STAT_TYPE = 'COM' AND DATE_FORMAT(NODE_STAT_CREATE_DT,'%Y/%m/%d') = :#{#searchVO.endDate} ORDER BY NODE_STAT_CREATE_DT DESC", nativeQuery = true)
+	public List<MgmtNodeStat> computingStatAllUser(@Param("searchVO") SearchVO searchVO);
 }

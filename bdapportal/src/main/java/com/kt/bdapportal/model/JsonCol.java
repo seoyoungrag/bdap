@@ -9,17 +9,20 @@ public class JsonCol {
 	String colNm;
 	@JsonProperty(value ="type")
 	String colType;
+	@JsonProperty(value ="index")
+	int orderNum;
 	
 	public JsonCol() {
 		super();
 	}
 	
-	public JsonCol(String colNm, String colType) {
+	public JsonCol(String colNm, String colType, int orderNum) {
 		super();
 		this.colNm = colNm;
 		this.colType = colType;
+		this.orderNum = orderNum;
 	}
-	
+
 	public String getColNm() {
 		return colNm;
 	}
@@ -31,6 +34,12 @@ public class JsonCol {
 	}
 	public void setColType(String colType) {
 		this.colType = colType;
+	}
+	public int getOrderNum() {
+		return orderNum;
+	}
+	public void setOrderNum(int orderNum) {
+		this.orderNum = orderNum;
 	}
 	
 }

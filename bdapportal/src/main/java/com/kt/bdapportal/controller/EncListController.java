@@ -2,12 +2,14 @@ package com.kt.bdapportal.controller;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.channels.FileChannel;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -24,14 +28,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.kt.bdapportal.common.LoggingRequestInterceptor;
 import com.kt.bdapportal.common.util.BbsConstant;
 import com.kt.bdapportal.common.util.NdapApiWrapper;
 import com.kt.bdapportal.common.util.SearchVO;
+import com.kt.bdapportal.common.util.Util;
 import com.kt.bdapportal.domain.BdapCol;
 import com.kt.bdapportal.domain.BdapCrypto;
 import com.kt.bdapportal.domain.BdapCryptoCol;
 import com.kt.bdapportal.domain.BdapFile;
 import com.kt.bdapportal.domain.BdapTbl;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.domain.MgmtTblStat;
 import com.kt.bdapportal.service.BdapColService;
 import com.kt.bdapportal.service.BdapCryptoColService;
@@ -45,7 +52,8 @@ import net.sf.json.JSONObject;
 
 @Controller
 public class EncListController {
-
+	final static Logger log = LoggerFactory.getLogger(EncListController.class);
+	
 	@Autowired
 	private BdapCryptoService bdapCryptoService;
 
@@ -87,10 +95,9 @@ public class EncListController {
 	public void getEncList(HttpServletRequest request, HttpServletResponse response) {
 
 		try {
-
 			request.setCharacterEncoding("UTF-8");
 			HttpSession session = request.getSession();
-			String userId = (String) session.getAttribute("USER_ID");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 
 			JSONObject jsonObj = new JSONObject();
 
@@ -102,64 +109,64 @@ public class EncListController {
 
 			JSONArray jsonArray = new JSONArray();
 
-			List<BdapCrypto> bdapCryptoList = bdapCryptoService.getEncDecList(userId, 'E', startnum, rows);
+			List<BdapCrypto> bdapCryptoList = new ArrayList<BdapCrypto>();
+			
+			if(Util.isProcess(request)){ 
+				bdapCryptoList = bdapCryptoService.getEncDecList('E', startnum, rows);
+			}else{
+				bdapCryptoList = bdapCryptoService.getEncDecList(bdapUser.getUserId(), 'E', startnum, rows);
+			}
 
-			/*
-			 * String bdapCryptoIdList = "";
-			 * 
-			 * for(int i = 0; i < bdapCryptoList.size(); i++){ BdapCrypto
-			 * bdapCrypto = bdapCryptoList.get(i); bdapCryptoIdList +=
-			 * "'"+bdapCrypto.getCrtId()+"'"+","; }
-			 * 
-			 * bdapCryptoIdList = bdapCryptoIdList.substring(0,
-			 * bdapCryptoIdList.length()-1);
-			 * 
-			 * List<BdapFile> bdapFileList =
-			 * fileService.getFileListbyParentIdArr(bdapCryptoIdList);
-			 */
-
-			Long bdapCryptoListCount = bdapCryptoService.getEncDecListCount(userId, 'E');
+			Long bdapCryptoListCount = 0L;
+			
+			if(Util.isProcess(request)){ // 암복호화 승인 권한이 있는지 확인한다. 승인 권한이 있다면 전체 리스트가 나와야 함.
+				bdapCryptoListCount = bdapCryptoService.getEncDecListCount('E');
+			}else{
+				bdapCryptoListCount = bdapCryptoService.getEncDecListCount(bdapUser.getUserId(), 'E');
+			}
+			
 
 			for (int i = 0; i < bdapCryptoList.size(); i++) {
 				BdapCrypto bdapCrypto = bdapCryptoList.get(i);
 				JSONObject jsonObj1 = new JSONObject();
 				List<BdapFile> bdapFileList = fileService.getFileListbyParentId(bdapCrypto.getCrtId());
-				String fileName = "";
-				if (bdapFileList.size() > 0) {
-					String fileStorePath = BbsConstant.FILE_STORE_PATH + File.separator;
-					String fileTempPath = BbsConstant.FILE_TEMP_PATH + File.separator + userId;
-
-					File directory = new File(fileTempPath);
-					if (directory.exists() == false) {
-						directory.mkdirs();
-					}
-					try {
-					for (int j = 0; j < bdapFileList.size(); j++) {
-						BdapFile bdapFile = bdapFileList.get(j);
-
-						FileInputStream inputStream = new FileInputStream(fileStorePath + bdapFile.getFleStroNm());
-						FileOutputStream outputStream = new FileOutputStream(
-								fileTempPath + File.separator + bdapFile.getFleDisplayNm());
-
-						FileChannel fcin = inputStream.getChannel();
-						FileChannel fcout = outputStream.getChannel();
-
-						long size = fcin.size();
-						fcin.transferTo(0, size, fcout);
-
-						fcout.close();
-						fcin.close();
-
-						outputStream.close();
-						inputStream.close();
-
-						fileName += bdapFile.getFleDisplayNm() + "*";
-					}
-
-					} catch (Exception e) {
-						
-					}
-				}
+				StringBuffer fileName = new StringBuffer();
+				
+				if(bdapFileList.size() > 0){
+	 	        	String fileStorePath = BbsConstant.FILE_STORE_PATH+File.separator;
+	 				String fileTempPath = BbsConstant.FILE_TEMP_PATH + File.separator + bdapCrypto.getCrtOwnerId();
+	 				
+	 				File directory = new File(fileTempPath);
+	 		        if(directory.exists() == false){
+	 		        	directory.mkdirs();
+	 		        }
+	 		        
+	 		       for(int j = 0; j < bdapFileList.size(); j++){
+	 					BdapFile bdapFile = bdapFileList.get(j);
+	 					
+	 					try{
+	 						FileInputStream inputStream = new FileInputStream(fileStorePath + bdapFile.getFleStroNm());        
+							FileOutputStream outputStream = new FileOutputStream(fileTempPath + File.separator + bdapFile.getFleDisplayNm());
+							  
+							FileChannel fcin =  inputStream.getChannel();
+							FileChannel fcout = outputStream.getChannel();
+							  
+							long size = fcin.size();
+							fcin.transferTo(0, size, fcout);
+							  
+							fcout.close();
+							fcin.close();
+							  
+							outputStream.close();
+							inputStream.close();
+	 					}catch(FileNotFoundException e){
+	 						e.printStackTrace();
+	 					}
+	 					
+						fileName.append(bdapFile.getFleDisplayNm()).append("*");
+	 				}
+	 	        }
+				
 				String reqDt = (bdapCrypto.getCrtReqDt() != null && !bdapCrypto.getCrtReqDt().equals(""))
 						? bdapCrypto.getCrtReqDt().toString().substring(0, 19) : "";
 				String processDt = (bdapCrypto.getCrtResDt() != null && !bdapCrypto.getCrtResDt().equals(""))
@@ -182,10 +189,11 @@ public class EncListController {
 				jsonObj1.put("table", bdapCrypto.getCrtSrcTblNm());
 				jsonObj1.put("column", bdapCrypto.getCrtDocNum());
 				jsonObj1.put("status", status);
-				jsonObj1.put("download", fileName);
+				jsonObj1.put("download", fileName.toString());
 				jsonObj1.put("processDt", processDt);
 				jsonObj1.put("validateDate", validateDt);
 				jsonObj1.put("cryptoId", bdapCrypto.getCrtId());
+				jsonObj1.put("ownerId", bdapCrypto.getCrtOwnerId());
 
 				jsonArray.add(jsonObj1);
 			}
@@ -261,10 +269,17 @@ public class EncListController {
 		try {
 
 			String colTblId = (String) request.getParameter("colTblId");
-
-			List<BdapCol> colList = colService.getBdapColListByTblId(colTblId);
+			String type = (String) request.getParameter("type");
+			List<BdapCol> colList;
+			
+			if(type.equals("enc")){
+				colList = colService.getBdapColListByTblId(colTblId);
+			}else{
+				colList = colService.getBdapColListByTblIdAndIsPrivate(colTblId);
+			}
 
 			mav.addObject("colList", colList);
+			mav.addObject("type", type);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -281,8 +296,9 @@ public class EncListController {
 
 			HttpSession session = request.getSession();
 
-			String userId = (String) session.getAttribute("USER_ID");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			request.setCharacterEncoding("UTF-8");
+
 
 			SearchVO searchVO = new SearchVO();
 
@@ -344,7 +360,7 @@ public class EncListController {
 			// bdapCrypto.setCrtResDt(ts);
 			bdapCrypto.setCrtDocNum(docNumber);
 			bdapCrypto.setCrtCreateTblNm(tableNm);
-			bdapCrypto.setCrtOwnerId(userId);
+			bdapCrypto.setCrtOwnerId(bdapUser.getUserId());
 			bdapCrypto.setCrtSrcDbNm(schema);
 			bdapCrypto.setCrtSrcTblNm(tableList);
 			bdapCrypto.setCrtEndDate(formatter.parse(validateDate));
@@ -353,9 +369,9 @@ public class EncListController {
 
 			String[] fileList = fileListArr.split("\\*");
 
-			if (fileList.length != 0 && fileList.equals("")) {
+			if (fileList.length != 0 && fileListArr.contains("*")) {
 
-				String fileTempPath = BbsConstant.FILE_TEMP_PATH + File.separator + userId;
+				String fileTempPath = BbsConstant.FILE_TEMP_PATH + File.separator + bdapUser.getUserId();
 				String filePath = BbsConstant.FILE_STORE_PATH + File.separator;
 
 				File directory = new File(filePath);
@@ -438,37 +454,32 @@ public class EncListController {
 		} else {
 			rtnStr = "redirect:/decList.do";
 		}
-		boolean isProcessed = true;
 		String result = "";
 		if(processType.equals("SUC")) {
 			try{
 				result = NdapApiWrapper.getInstance().encTable(bdapCrypto);
 			}catch(Exception e){
-				isProcessed = false;
+				response.setCharacterEncoding("UTF-8");
+				PrintWriter out;
+				log.warn(result);
+				try {
+					out = response.getWriter();
+					out.println("<script>");
+					out.println("alert('처리 요청을 실패하였습니다.');");
+					out.println("</script>");
+					out.flush();
+				} catch (IOException IoE) {
+					IoE.printStackTrace();
+				}
 				e.printStackTrace();
 			}
 		}else if(processType.equals("FAL")) {
-			//none
 		}
 		
 		bdapCrypto.setCrtStatus(processType);
 		bdapCrypto.setCrtResDt(ts);
 		bdapCrypto = bdapCryptoService.encDecInsert(bdapCrypto);
 		
-		if(type.equals("enc") && ((!isProcessed || result.equals("")) || !result.contains("value"))){
-			response.setCharacterEncoding("UTF-8");
-			PrintWriter out;
-			try {
-				out = response.getWriter();
-				out.println("<script>");
-				out.println("alert('처리 요청을 실패하였습니다.');");
-				out.println("</script>");
-				out.flush();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-		}
 		return rtnStr;
 
 	}
@@ -497,6 +508,7 @@ public class EncListController {
 		bdapCrypto = bdapCryptoService.getBdapCryptoByCryptoId(cryptoId);
 		bdapCrypto.setCrtStatus("REQ");
 		bdapCrypto.setCrtReqDt(ts);
+		bdapCrypto.setCrtResDt(null);
 		bdapCrypto = bdapCryptoService.encDecInsert(bdapCrypto);
 
 		return rtnStr;

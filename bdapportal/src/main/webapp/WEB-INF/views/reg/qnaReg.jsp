@@ -78,7 +78,7 @@
 	                                            <div class="form-group" style="margin-bottom:10px;">
 	                                                <label class="col-md-2 control-label" style="text-align:right;">질문분류 :  </label>
 		                                                <div class="col-md-2">
-			                                                <select class="selectpicker" name="category" onchange="seleceCategorySub(this.value)">
+			                                                <select class="selectpicker" name="category" data-width="auto"  onchange="seleceCategorySub(this.value)">
 			                                                <%for(int i = 0; i < bdapBbsCategory.size(); i++){ %>
 			                                              	  <option value="<%=bdapBbsCategory.get(i).getCateId()%>"><%=bdapBbsCategory.get(i).getCateName()%></option>
 			                                                <%} %>
@@ -86,7 +86,7 @@
 		                                                </div>
 	                                                    <label class="col-md-4 control-label" style="text-align:right;">질문세부분류 :  </label>
 		                                                <div class="col-md-4">
-			                                                <select class="selectpicker" name="categorySub" id="categorySub" onchange="selectResponser(this.value)">
+			                                                <select class="selectpicker" name="categorySub" id="categorySub" data-width="auto" onchange="selectResponser(this.value)">
 				                                               <%for(int i = 0; i < bdapBbsCategorySub.size(); i++){ %>
 				                                              	  <option id="<%=bdapBbsCategorySub.get(i).getCateId()%>" value="<%=bdapBbsCategorySub.get(i).getCateId()%>"><%=bdapBbsCategorySub.get(i).getCateName()%></option>
 				                                                <%} %>
@@ -151,6 +151,8 @@
 
         </div>
         <!-- END wrapper -->
+        <link rel="stylesheet" href="<%=contextPath%>/resources/kt/css/dropzone.css" />
+        
 		<!-- jqeury  -->
         <script src="<%=contextPath%>/resources/kt/js/jquery.min.js"></script>
         <script src="<%=contextPath%>/resources/js/jquery-ui.js" type="text/javascript"></script>
@@ -284,14 +286,6 @@
     			   return radioHtml;
     		}
     		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
-    	    
     	    $(function () {
     	        $('#datetimepicker6').datetimepicker({
     	        	format: 'YYYY/MM/DD'

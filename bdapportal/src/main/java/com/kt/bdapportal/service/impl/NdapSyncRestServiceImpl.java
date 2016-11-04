@@ -23,20 +23,27 @@ public class NdapSyncRestServiceImpl {
 	private BdapColRepository colRepository;
 
 	public String createTable(NdapTableEventJson json) {
-		String retVal = "create tblId : ";
+		StringBuffer retVal = new StringBuffer("create tblId : ");
 		
 		//1. 테이블 도메인 객체 만들어서
 		BdapTbl tbl = new BdapTbl();
-		JsonTable jTbl = json.getJsonTbl();
+		JsonTable jTbl = new JsonTable(json.getJsonTbl());
 		tbl.setTblEngNM(jTbl.getTblName());
 		tbl.setTblDbNm(jTbl.getDbName());
 		tbl.setTblOwner(jTbl.getOwner());
-		tbl.setTblCreateDt(jTbl.getTblCreate());
+		StringBuffer tblCreate = new StringBuffer(jTbl.getTblCreate());
+		if(tblCreate.length()==10){
+			tblCreate.append("000");
+		}
+		tbl.setTblCreateDt(tblCreate.toString());
 		tbl.setTblType(jTbl.getTblType());
 		tbl.setTblLocation(jTbl.getSdInfo().getLocation());
+		tbl.setTblValidateDate(jTbl.getTblValidateDate());
 		
-		//1-1. 중복 체크(중복이면 tblid를 할당해서 update되도록 만든다.
 		List<BdapTbl> oTblList = tblRepository.getBdapTbl(tbl);
+		
+		//1-1. 중복 체크(중복이면 tblid를 할당해서 update되도록 만든다. 
+		//지우고 삭제하도록 변경 drop이나 alter sync가 안된 상황
 		/*
 		BdapTbl oTbl = null;
 		if(!oTblList.isEmpty()){
@@ -68,6 +75,7 @@ public class NdapSyncRestServiceImpl {
 		//4. 컬럼 도메인 만들어서
 		List<BdapCol> colList = new ArrayList<BdapCol>();
 		List<JsonCol> jColList = jTbl.getSdInfo().getColInfo();
+		int colIndex = 1;
 		for(JsonCol jCol : jColList){
 			BdapCol col = new BdapCol();
 			col.setColEngNm(jCol.getColNm());
@@ -75,6 +83,8 @@ public class NdapSyncRestServiceImpl {
 			col.setColTblId(tblId);
 			col.setColDbNm(tbl.getTblDbNm());
 			col.setColTblNm(tbl.getTblEngNM());
+			col.setColOrderNum(colIndex++);
+			//col.setColOrderNum(jCol.getOrderNum());
 			colList.add(col);
 		}
 		
@@ -86,13 +96,13 @@ public class NdapSyncRestServiceImpl {
 		//tbl.setChild(colList);
 		//tbl = tblRepository.saveAndFlush(tbl);	
 		
-		retVal += tbl.getTblId();
+		retVal.append(tbl.getTblId());
 	
-		return retVal;
+		return retVal.toString();
 	}
 
 	public String alterTable(NdapTableEventJson json) {
-		String retVal = "alter tblId : ";
+		StringBuffer retVal = new StringBuffer("alter tblId : ");
 		//1. 테이블 도메인 객체 만들어서
 		BdapTbl oldTbl = new BdapTbl();
 		JsonTable jOldTbl = json.getJsonTblOld();
@@ -100,6 +110,7 @@ public class NdapSyncRestServiceImpl {
 		oldTbl.setTblDbNm(jOldTbl.getDbName());
 		//2. 테이블을 셀렉트 한다.
 		List<BdapTbl> oTblList = tblRepository.getBdapTbl(oldTbl);
+		
 		/*
 		BdapTbl oTbl = null;
 		if(!oTblList.isEmpty()){
@@ -109,23 +120,31 @@ public class NdapSyncRestServiceImpl {
 			oldTbl.setTblId(oTbl.getTblId());
 		}
 		*/
+		
 		//2-1. 기존의 중복 테이블들을 삭제해야한다. 중복 테이블들 중 첫번째만 기존정보를 넘겨주는 로직 처리후 삭제처리된다.
 		boolean isDuplicated = false;
 		for(BdapTbl oTbl : oTblList){
 			if(!isDuplicated){
 				oldTbl.setTblId(oTbl.getTblId());
-	
+				if(oTbl.getTblValidateDate()!=null){
+					oldTbl.setTblValidateDate(oTbl.getTblValidateDate());
+				}
 				//3. 기존 테이블 부가 정보를 유지해야 한다.
 				//3-1. 기존 테이블 부가 정보를 복사한 객체를 만들고, 이 json 데이터를 객체에 입력한다.
 				BdapTbl newTbl = new BdapTbl(oldTbl);
 				JsonTable jNewTbl = json.getJsonTblNew();
 				newTbl.setTblDbNm(jNewTbl.getDbName());
-				newTbl.setTblCreateDt(jNewTbl.getTblCreate());
+				StringBuffer tblCreate = new StringBuffer(jNewTbl.getTblCreate());
+				if(tblCreate.length()==10){
+					tblCreate.append("000");
+				}
+				newTbl.setTblCreateDt(tblCreate.toString());
 				newTbl.setTblId(oldTbl.getTblId());
 				newTbl.setTblEngNM(jNewTbl.getTblName());
 				newTbl.setTblType(jNewTbl.getTblType());
 				newTbl.setTblLocation(jNewTbl.getSdInfo().getLocation());
 				newTbl.setTblOwner(jNewTbl.getOwner());
+				
 				
 				//3-2. 테이블 인서트
 				newTbl = tblRepository.save(newTbl);
@@ -140,6 +159,7 @@ public class NdapSyncRestServiceImpl {
 				List<BdapCol> oldColList = colRepository.getBdapCol(colForTblid);
 				List<JsonCol> jNewColList = jNewTbl.getSdInfo().getColInfo();
 				List<BdapCol> insertColList = new ArrayList<BdapCol>();
+				int colIndex = 1;
 				for(JsonCol jCol : jNewColList){
 					BdapCol curCol = null;
 					for(BdapCol oCol : oldColList){
@@ -150,14 +170,17 @@ public class NdapSyncRestServiceImpl {
 					}
 					if(curCol !=null){
 						curCol.setColDataType(jCol.getColType());
+						//curCol.setColOrderNum(jCol.getOrderNum());
 					}else{
 						curCol = new BdapCol();
 						curCol.setColEngNm(jCol.getColNm());
 						curCol.setColDataType(jCol.getColType());
+						//curCol.setColOrderNum(jCol.getOrderNum());
 					}
 					curCol.setColTblId(newTbl.getTblId());
 					curCol.setColDbNm(newTbl.getTblDbNm());
 					curCol.setColTblNm(newTbl.getTblEngNM());
+					curCol.setColOrderNum(colIndex++);
 					insertColList.add(curCol);
 				}
 				
@@ -182,7 +205,7 @@ public class NdapSyncRestServiceImpl {
 				colRepository.save(insertColList);
 				colRepository.flush();
 				
-				retVal += newTbl.getTblId();
+				retVal.append(newTbl.getTblId());
 				isDuplicated = true;
 			}else{
 				tblRepository.delete(oldTbl);
@@ -195,11 +218,12 @@ public class NdapSyncRestServiceImpl {
 			}
 		}
 		
-		return retVal;
+		return retVal.toString();
 	}
 
 	public String dropTable(NdapTableEventJson json) {
-		String retVal = "drop tblId : ";
+		StringBuffer retVal = new StringBuffer("drop tblId : ");
+		
 		//1. 테이블 도메인 객체 만들어서
 		BdapTbl oldTbl = new BdapTbl();
 		JsonTable jTbl = json.getJsonTbl();
@@ -227,10 +251,10 @@ public class NdapSyncRestServiceImpl {
 				if(!duplicatedC.isEmpty()){
 					colRepository.delete(duplicatedC);
 				}
-				retVal += oTbl.getTblId()+" ";
+				retVal.append(oTbl.getTblId()).append(" ");
 			}
 		}
-		return retVal;
+		return retVal.toString();
 	}
 
 	

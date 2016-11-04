@@ -18,7 +18,6 @@
 
         <title>BDAP PORTAL</title>
 
-		<link href="<%=contextPath%>/resources/assets/plugins/dropzone/css/dropzone.css" rel="stylesheet" type="text/css">
         <link href="<%=contextPath%>/resources/kt/plugins/switchery/switchery.min.css" rel="stylesheet">
         <link href="<%=contextPath%>/resources/kt/plugins/jquery-circliful/css/jquery.circliful.css" rel="stylesheet" type="text/css">
 
@@ -33,7 +32,7 @@
         <link href="<%=contextPath%>/resources/kt/css/menu.css" rel="stylesheet" type="text/css">
         <link href="<%=contextPath%>/resources/kt/css/responsive.css" rel="stylesheet" type="text/css">
 
-        <script src="//www.google-analytics.com/analytics.js" async=""></script><script src="<%=contextPath%>/resources/kt/js/modernizr.min.js"></script>
+        <script src="<%=contextPath%>/resources/kt/js/modernizr.min.js"></script>
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         
         
@@ -43,23 +42,7 @@
         <link rel="stylesheet" type="text/css" href="<%=contextPath%>/resources/kt/css/bootstrap-select.css" />
         
         <link rel="stylesheet" type="text/css" href="<%=contextPath%>/resources/kt/ndaum/css/editor.css" charset="utf-8"/>
-        
-        <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-            ga('create', 'UA-72255993-1', 'auto');
-            ga('send', 'pageview');
-        </script>
-
-        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-       
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-       
        
        <%-- <link rel="stylesheet" href="<%=contextPath%>/resources/kt/images/style.css" type="text/css"> --%>
        <script src="<%=contextPath%>/resources/kt/amcharts/amcharts.js" type="text/javascript"></script>

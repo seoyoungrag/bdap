@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.kt.bdapportal.domain.BdapComment;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.service.CommentService;
 
 import net.sf.json.JSONObject;
@@ -35,9 +36,7 @@ public class BbsCommentController {
 		try{
 			
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String userNm = (String)session.getAttribute("USER_NM");
-			String userMail = (String)session.getAttribute("USER_MAIL");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			request.setCharacterEncoding("UTF-8");
 			
 			String comment = (String)request.getParameter("comment");				
@@ -55,9 +54,9 @@ public class BbsCommentController {
 			bdapComment.setCmtContent(comment);
 			bdapComment.setCmtRegDt(ts);
 			bdapComment.setCmtDeletedYn('N');
-			bdapComment.setCmtWriterId(userId);
-			bdapComment.setCmtWriterEmail(userMail);
-			bdapComment.setCmtWriterNm(userNm);
+			bdapComment.setCmtWriterId(bdapUser.getUserId());
+			bdapComment.setCmtWriterEmail(bdapUser.getUserEmail());
+			bdapComment.setCmtWriterNm(bdapUser.getUserNm());
 			
 			bdapComment = commentService.commentInsert(bdapComment);
 			long cmtCount = commentService.countByCmtParentBbsId(bbsPostId);
@@ -89,9 +88,7 @@ public class BbsCommentController {
 		try{
 			
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String userNm = (String)session.getAttribute("USER_NM");
-			String userMail = (String)session.getAttribute("USER_MAIL");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			request.setCharacterEncoding("UTF-8");
 			
 			String commentContent = (String)request.getParameter("commentContent");				
@@ -111,9 +108,9 @@ public class BbsCommentController {
 			bdapComment.setCmtContent(commentContent);
 			bdapComment.setCmtRegDt(ts);
 			bdapComment.setCmtDeletedYn('N');
-			bdapComment.setCmtWriterId(userId);
-			bdapComment.setCmtWriterEmail(userMail);
-			bdapComment.setCmtWriterNm(userNm);
+			bdapComment.setCmtWriterId(bdapUser.getUserId());
+			bdapComment.setCmtWriterEmail(bdapUser.getUserEmail());
+			bdapComment.setCmtWriterNm(bdapUser.getUserNm());
 			
 			commentService.commentInsert(bdapComment);
 		
@@ -143,10 +140,9 @@ public class BbsCommentController {
 		try{
 			
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
 			request.setCharacterEncoding("UTF-8");
 			
-			String commentId = (String)request.getParameter("commentId");			//�θ� �Խñ� ���̵�
+			String commentId = (String)request.getParameter("commentId");		
 			String bbsPostId = (String)request.getParameter("bbsPostId");
 			
 			BdapComment bdapComment = new BdapComment();

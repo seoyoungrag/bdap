@@ -1,23 +1,28 @@
 package com.kt.bdapportal.login;
 
 import java.io.PrintWriter;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.kt.bdapportal.common.util.NdapApiWrapper;
 import com.kt.bdapportal.common.util.SearchVO;
 import com.kt.bdapportal.common.util.auth.NdapAuthentication;
+import com.kt.bdapportal.common.util.auth.NdapUser;
+import com.kt.bdapportal.domain.BdapAcl;
+import com.kt.bdapportal.domain.BdapRole;
+import com.kt.bdapportal.domain.BdapRoleUser;
 import com.kt.bdapportal.domain.BdapUser;
-import com.kt.bdapportal.domain.MgmtNodeStat;
+import com.kt.bdapportal.service.BdapAclService;
+import com.kt.bdapportal.service.BdapRoleUserService;
+import com.kt.bdapportal.service.BdapUserAclService;
 import com.kt.bdapportal.service.BdapUserService;
 
 import net.sf.json.JSONObject;
@@ -26,15 +31,14 @@ import net.sf.json.JSONObject;
 public class Login {
 	@Autowired
 	private BdapUserService bdapUserService;
+	@Autowired
+	private BdapUserAclService bdapUserAclService;
+	@Autowired
+	private BdapRoleUserService bdapRoleUserService;
+	@Autowired
+	private BdapAclService bdapAclService;
 	
-	public enum AclPageEnum {
-        ACL_ALL,SCHEMA_SELECT_PAGE, LOADSTATUS_SELECT_PAGE,DAILYLOADSTATUS_SELECT_PAGE
-        ,TABLE_MANAGEMENT_PAGE
-        ,ENCRYPTION_SELECT_PAGE,DECRYPTION_SELECT_PAGE, ENCRYPTION_PROCESS_SELECT_PAGE,DECRYPTION_PROCESS_SELECT_PAGE
-        ,NOTICE_PAGE,QNA_PAGE,REFERENCE_PAGE,LINKAGE_PAGE,DEVREQ_PAGE
-        ,USER_QUERY_MANAGEMENT_PAGE,STATISTICS_PAGE,SETUP_PAGE
-        
-    }
+	
 	
 	public enum RoleEnum {
         ROLE_ALL,ROLE_NOTICE_ADMIN
@@ -62,17 +66,12 @@ public class Login {
 	public void loginProcess(HttpServletRequest request, HttpServletResponse response){
 		try{
 			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("result", "1"); // 로그인 성공 status
 			
 			String userId = (String)request.getParameter("loginId");
 			String userPassWord =  request.getParameter("loginPassword") == null ? "" : request.getParameter("loginPassword");
-			
-			String role = "";
-			String acl = "";
 			String analysis = "";
-			
 			HttpSession session = request.getSession();
-			String userIp = request.getRemoteAddr();
-			
 			try{
 				this.ndapAuthentication = new NdapAuthentication(userId, userPassWord);
 				
@@ -83,48 +82,60 @@ public class Login {
 						searchVO.setUserId(searchVO.nullTrim(userId));
 						
 						BdapUser bdapUser = bdapUserService.getBdapUser(searchVO);
-						// 아니 왜 세션에 vo를 안담아놓고 .... 
-						session.setAttribute("USER_ID", bdapUser.getUserId());
-						session.setAttribute("USER_NM", bdapUser.getUserNm());
-						session.setAttribute("USER_MAIL", bdapUser.getUserEmail());
-						session.setAttribute("USER_IP", userIp);
 						
-						// 사용자 아이디가 admin이 아니라 권한으로 체크해야지....
-						if(userId.equals("admin")){
-							acl = AclPageEnum.ACL_ALL.toString();
-							role = RoleEnum.ROLE_ALL.toString();
-							session.setAttribute("USER_ACL", acl);
-							session.setAttribute("USER_ROLE", role);
-						}else{
-							/*role = RoleEnum.ROLE_ALL.toString();*/
-							acl = AclPageEnum.SCHEMA_SELECT_PAGE.toString()+","
-							+AclPageEnum.LOADSTATUS_SELECT_PAGE.toString()+","
-							+AclPageEnum.DAILYLOADSTATUS_SELECT_PAGE.toString()
-							+AclPageEnum.NOTICE_PAGE.toString()+","
-							+AclPageEnum.REFERENCE_PAGE.toString()+","
-							+AclPageEnum.LINKAGE_PAGE.toString()+","
-							+AclPageEnum.DEVREQ_PAGE.toString()+","
-							+AclPageEnum.QNA_PAGE.toString();
-							//role = RoleEnum.ROLE_NOTICE_ADMIN.toString();
-							session.setAttribute("USER_ACL", acl);
-							session.setAttribute("USER_ROLE", role);
+						// 회원 정보를 입력해야 한다.
+						if(bdapUser==null){
+							NdapApiWrapper ndapApiWrapper = NdapApiWrapper.getInstance();
+							NdapUser ndapUser = ndapApiWrapper.userInfo(userId);
+							
+							bdapUser = new BdapUser();
+							bdapUser.setUserInfo(ndapUser);
+							
+							bdapUserService.insert(bdapUser);
+							
+							//신규 회원의 기본 권한은 ETC로 한다.
+							BdapRole bdapRole = new BdapRole();
+							bdapRole.setRoleId("ETC");
+							
+							BdapRoleUser bdapRoleUser = new BdapRoleUser();
+							bdapRoleUser.setRoleId(bdapRole);
+							bdapRoleUser.setUserId(bdapUser);
+							
+							this.bdapRoleUserService.insert(bdapRoleUser);
 						}
 						
-						analysis = AnalysisRole.NDAP.toString()+","
-								+AnalysisRole.JUPYTER.toString()+","
-								+ AnalysisRole.PMS.toString();
+						session.setAttribute("bdapUser", bdapUser);
+						
+						// 사용자의 권한과 acl을 조회하여 세션에 담는다.
+						List<String> bdapUserAclList = this.bdapUserAclService.aclListByUserId(bdapUser.getUserId());
+						session.setAttribute("bdapUserAclList", bdapUserAclList);
+						
+						// ACL에 등록되어있는 전체 페이지를 조회한다. 모든 페이지가 ACL에 등록된게 아닌 리스트 페이지만 등록이 되어있으므로 해당 리스트로 ACL 체크 여부를 결정한다.
+						List<BdapAcl> allAclList = this.bdapAclService.getAllAclList();
+						session.setAttribute("allAclList", allAclList);
+						
+						BdapRoleUser bdapRoleUser = bdapRoleUserService.getRoleIdByUserId(bdapUser);
+						session.setAttribute("bdapRoleUser", bdapRoleUser);
+						
+						String userRollId = bdapRoleUser.getRoleId().getRoleId();
+						
+						if(userRollId.contains("ADMIN") || userRollId.contains("ITO")){
+							analysis =  AnalysisRole.ANALYSISROLE_ALL.toString();
+						}
+						
 						session.setAttribute("ANALYSIS_ROLE", analysis);
 					}catch(Exception e){
+						e.printStackTrace();
 						jsonObj.put("result", "-3"); // 내부 세션정보 획득 실패
 					}
 				}else{
 					jsonObj.put("result", "-2"); // 비어있는 NDAP 인증 키
 				}
 			}catch(Exception e){
+				e.printStackTrace();
  				jsonObj.put("result", "-1"); // NDAP 인증 실패
 			}
 			
-			jsonObj.put("result", "1"); // 로그인 성공
 			response.setCharacterEncoding("UTF-8");
 			PrintWriter pw = response.getWriter();
 			pw.print(jsonObj);
@@ -133,5 +144,14 @@ public class Login {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+	}
+	
+	@RequestMapping("/logout.do")
+	public ModelAndView logout(HttpServletRequest request, HttpServletResponse response){
+		HttpSession session = request.getSession();
+		session.invalidate();
+		
+		ModelAndView mav = new ModelAndView("login");
+		return mav;
 	}
 }

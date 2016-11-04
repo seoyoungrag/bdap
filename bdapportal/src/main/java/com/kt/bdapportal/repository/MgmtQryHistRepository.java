@@ -27,6 +27,7 @@ public interface MgmtQryHistRepository extends JpaRepository<MgmtQryHist, String
 			+ " FROM MGMT_QRY_HIST B WHERE DATE_FORMAT(FROM_UNIXTIME(B.QRY_START_DT/1000),'%Y/%m/%d %h:%i:%s')  BETWEEN DATE_FORMAT(?1,'%Y/%m/%d %h:%i:%s')  and DATE_FORMAT(?2,'%Y/%m/%d %h:%i:%s')  GROUP BY  DATE_FORMAT(FROM_UNIXTIME(QRY_START_DT/1000),'%Y%m%d') , QRY_USER ORDER BY QRY_USER, QRY_START_DT DESC", nativeQuery = true)
 	List<MgmtQryHist> queryUsageListSearch(java.util.Date searchStartDate,java.util.Date searchEndDate);
 	
+	@Deprecated
 	@Query(value ="SELECT "
 			+" '' as QRY_DURATION, QRY_USER,(SELECT USER_NM FROM BDAP_USER C WHERE C.USER_ID=B.QRY_USER) as QRY_STATEMENT, '' as QRY_INVOKER_SYSTEM, "
 			+" (select count(*) from bdapportal.MGMT_QRY_HIST where QRY_USER = B.QRY_USER and DATE_FORMAT(FROM_UNIXTIME(QRY_START_DT/1000),'%Y/%m/%d') = DATE_FORMAT(B.seleted_date,'%Y/%m/%d')) as QRY_HIVE_ID, "
@@ -40,6 +41,23 @@ public interface MgmtQryHistRepository extends JpaRepository<MgmtQryHist, String
 			+"   GROUP BY QRY_USER "
 			+" ) B", nativeQuery = true)
 	List<MgmtQryHist> queryUsageStatistics(String searchStartDate, String searchEndDate);
+
+
+	@Query(value ="SELECT COUNT(*) CNT FROM (select * from MGMT_QRY_HIST) CNT", nativeQuery = true)
+	Long countAccumulateQuery();
 	
 	
+	@Query(value ="SELECT COUNT(*) FROM MGMT_QRY_HIST "
+			+" WHERE DATE_FORMAT(FROM_UNIXTIME(QRY_START_DT/1000),'%Y/%m/%d') BETWEEN  "
+			+" 	date_SUB(now(), INTERVAL 8 DAY) and "
+			+" 	date_SUB(now(), INTERVAL 1 DAY) ", nativeQuery = true)
+	Long countWeekQuery();
+
+	@Query(value="SELECT "
+			+ "count(*) "
+			+ "from " 
+			+ "  bdapportal.BDAP_USER     "
+			, nativeQuery = true)
+	Long queryUsageStatisticsCount();
+
 }

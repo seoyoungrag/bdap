@@ -27,6 +27,7 @@ public class BbsRepositoryImpl implements BbsRepositoryCustom {
 			searchVO.setSearchType(searchVO.nullTrim(searchVO.getSearchType()));
 			
 			String questionYn = searchVO.nullTrim(searchVO.getQuestionYn());
+			String category = searchVO.nullTrim(searchVO.getCategory());
 			
 			StringBuffer query = new StringBuffer();
 			
@@ -40,9 +41,14 @@ public class BbsRepositoryImpl implements BbsRepositoryCustom {
 						+ "A.BBS_HIT AS BBS_HIT, A.BBS_PARENT_BBS_ID AS BBS_PARENT_BBS_ID, A.BBS_WRITER_ID AS BBS_WRITER_ID, A.BBS_WRITER_EMAIL AS BBS_WRITER_EMAIL, A.BBS_WRITER_NM AS BBS_WRITER_NM, "
 						+ "A.BBS_TITLE AS BBS_TITLE, "
 						+ "(SELECT CATE_NAME FROM BDAP_BBS_CATEGORY WHERE CATE_ID = A.BBS_CATEGORY) AS BBS_CATEGORY, "
-						+ "(SELECT CATE_NAME FROM BDAP_BBS_CATEGORY WHERE CATE_ID = A.BBS_CATEGORY_SUB) AS BBS_CATEGORY_SUB "
+						+ "(SELECT CATE_NAME FROM BDAP_BBS_CATEGORY WHERE CATE_ID = A.BBS_CATEGORY_SUB) AS BBS_CATEGORY_SUB, "
+						+ "'1' AS RNK "
 						+ "FROM BDAP_BBS A, BDAP_QNA D WHERE A.BBS_ID=D.BBS_ID "
 						+ "AND A.BBS_PARENT_BBS_ID  IS NULL AND A.BBS_TYPE = :boardType");
+						
+						if(!category.equals("")){
+							query.append(" AND A.BBS_CATEGORY = :category ");
+						}
 						
 						if(!questionYn.equals("") && !questionYn.equals("Y")){
 							query.append(" UNION ALL " 
@@ -53,24 +59,44 @@ public class BbsRepositoryImpl implements BbsRepositoryCustom {
 									+ "B.BBS_HIT AS BBS_HIT, B.BBS_PARENT_BBS_ID AS BBS_PARENT_BBS_ID, B.BBS_WRITER_ID AS BBS_WRITER_ID, B.BBS_WRITER_EMAIL AS BBS_WRITER_EMAIL, B.BBS_WRITER_NM AS BBS_WRITER_NM, "
 									+ "B.BBS_TITLE AS BBS_TITLE, "
 									+ "B.BBS_CATEGORY, "
-									+ "B.BBS_CATEGORY_SUB "
+									+ "B.BBS_CATEGORY_SUB, "
+									+ "'1' AS RNK "
 									+ "FROM BDAP_BBS B, BDAP_BBS LV1 "
 									+ "WHERE B.BBS_PARENT_BBS_ID = LV1.BBS_ID "
 									+ "AND B.BBS_PARENT_BBS_ID  IS NOT NULL "
 									+ "AND B.BBS_TYPE = :boardType");
 						}
 						
+						if(!category.equals("")){
+							query.append(" AND B.BBS_CATEGORY = :category ");
+						}
+						
 						query.append(") C WHERE BBS_DELETED_YN = 'N'  ");
 						
 			}else{
 				query.append(" SELECT * FROM ("
-						+ "SELECT BBS_ID AS ORDER_ID, BBS_REG_DT AS ORDER_DT, A.* FROM BDAP_BBS A WHERE A.BBS_PARENT_BBS_ID  IS NULL AND A.BBS_TYPE = :boardType"
+						+ "SELECT BBS_ID AS ORDER_ID, BBS_REG_DT AS ORDER_DT, D.*, '1' AS RNK "
+						+ "FROM BDAP_BBS D WHERE D.BBS_PARENT_BBS_ID  IS NULL AND D.BBS_TYPE = :boardType "
+						+ "AND D.BBS_EMERGENCY_YN='Y' "
 						+ " UNION ALL "
-						+ "SELECT B.BBS_PARENT_BBS_ID AS ORDER_ID, LV1.BBS_REG_DT AS ORDER_DT, B.* "
+						+ "SELECT BBS_ID AS ORDER_ID, BBS_REG_DT AS ORDER_DT, A.*, '2' AS RNK "
+						+ "FROM BDAP_BBS A WHERE A.BBS_PARENT_BBS_ID  IS NULL AND A.BBS_TYPE = :boardType "
+						+ "AND A.BBS_EMERGENCY_YN='N'"
+						+ " UNION ALL "
+						+ "SELECT B.BBS_PARENT_BBS_ID AS ORDER_ID, LV1.BBS_REG_DT AS ORDER_DT, B.*, '1' AS RNK "
 						+ "FROM BDAP_BBS B, BDAP_BBS LV1 "
 						+ "WHERE B.BBS_PARENT_BBS_ID = LV1.BBS_ID "
 						+ "AND B.BBS_PARENT_BBS_ID  IS NOT NULL "
+						+ "AND LV1.BBS_EMERGENCY_YN='Y' "
 						+ "AND B.BBS_TYPE = :boardType"
+						+ " UNION ALL "
+						+ "SELECT B.BBS_PARENT_BBS_ID AS ORDER_ID, LV1.BBS_REG_DT AS ORDER_DT, B.*, '2' AS RNK "
+						+ "FROM BDAP_BBS B, BDAP_BBS LV1 "
+						+ "WHERE B.BBS_PARENT_BBS_ID = LV1.BBS_ID "
+						+ "AND B.BBS_PARENT_BBS_ID  IS NOT NULL "
+						+ "AND LV1.BBS_EMERGENCY_YN='N' "
+						+ "AND B.BBS_TYPE = :boardType"
+
 								+ ") C WHERE BBS_DELETED_YN = 'N' ");
 			}
 			
@@ -86,7 +112,6 @@ public class BbsRepositoryImpl implements BbsRepositoryCustom {
 				){
 		}else{
 			//공지사항검색
-			String category = searchVO.getCategory(); 
 			String categorySub = searchVO.getCategorySub();
 			String startDate = searchVO.getStartDate()+" 00:00:00";
 			String endDate = searchVO.getEndDate()+" 23:59:59";
@@ -102,9 +127,15 @@ public class BbsRepositoryImpl implements BbsRepositoryCustom {
 			
 			startDate = startDate.replaceAll("\\/", "-");
 			endDate = endDate.replaceAll("\\/", "-");
-			if(!category.equals("")){
-				where.append(" AND C.BBS_CATEGORY LIKE CONCAT('%',:category,'%')");
+			
+			// category 맴버변수는 Qna일때와 나머지 게시판일때가 다르다. Qna에는 id가 들어가고 나머지에는 name이 들어가있다.
+			// 아래 구문은 QnA게시판이 아닐때에만 호출되면 된다.
+			if(!searchVO.getBoardType().equals(BbsConstant.QNA_CODE)){
+				if(!category.equals("")){
+					where.append(" AND C.BBS_CATEGORY LIKE CONCAT('%',:category,'%')");
+				}
 			}
+			
 			if(!categorySub.equals("")){
 				where.append(" AND C.BBS_CATEGORY_SUB LIKE CONCAT('%',:categorySub,'%')");
 			}
@@ -150,7 +181,7 @@ public class BbsRepositoryImpl implements BbsRepositoryCustom {
 			}
 		}
 		
-		query.append(where).append(" ORDER BY ORDER_DT DESC, ORDER_ID, BBS_REG_DT LIMIT :startNum,:size");
+		query.append(where).append(" ORDER BY RNK, ORDER_DT DESC, ORDER_ID, BBS_REG_DT LIMIT :startNum,:size");
 			
 		
 		Query queryObj = entityManager.createNativeQuery(query.toString(),BdapBbs.class);
@@ -166,7 +197,6 @@ public class BbsRepositoryImpl implements BbsRepositoryCustom {
 				){
 		}else{
 			//공지사항검색
-			String category = searchVO.getCategory(); 
 			String categorySub = searchVO.getCategorySub();
 			String startDate = searchVO.getStartDate()+" 00:00:00";
 			String endDate = searchVO.getEndDate()+" 23:59:59";
@@ -251,7 +281,7 @@ public class BbsRepositoryImpl implements BbsRepositoryCustom {
 					+ "WHERE B.BBS_PARENT_BBS_ID = LV1.BBS_ID "
 					+ "AND B.BBS_PARENT_BBS_ID  IS NOT NULL "
 					+ "AND B.BBS_TYPE = :boardType"
-							+ ") C WHERE 1=1 ");
+							+ ") C WHERE BBS_DELETED_YN = 'N' ");
 		}else{
 			query.append(" SELECT COUNT(*) FROM ("
 					+ "SELECT BBS_ID AS ORDER_ID, BBS_REG_DT AS ORDER_DT, A.* FROM BDAP_BBS A WHERE A.BBS_PARENT_BBS_ID  IS NULL AND A.BBS_TYPE = :boardType"
@@ -261,7 +291,7 @@ public class BbsRepositoryImpl implements BbsRepositoryCustom {
 					+ "WHERE B.BBS_PARENT_BBS_ID = LV1.BBS_ID "
 					+ "AND B.BBS_PARENT_BBS_ID  IS NOT NULL "
 					+ "AND B.BBS_TYPE = :boardType"
-							+ ") C WHERE 1=1 ");
+							+ ") C WHERE BBS_DELETED_YN = 'N' ");
 		}
 		
 		StringBuffer where = new StringBuffer();

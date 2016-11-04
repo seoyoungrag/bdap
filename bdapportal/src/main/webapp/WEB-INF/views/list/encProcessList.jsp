@@ -2,8 +2,11 @@
     pageEncoding="utf-8"%>
     
 <%
-  String test = (String)request.getAttribute("test");
-  String contextPath = (String)request.getContextPath();
+	String test = (String)request.getAttribute("test");
+	String contextPath = (String)request.getContextPath();
+	
+	boolean isAdmin = (Boolean)session.getAttribute("isAdmin");
+	boolean isProcess = (Boolean)session.getAttribute("isProcess");
 %>    
     
 <!DOCTYPE html>
@@ -87,6 +90,15 @@
             jQuery(document).ready(function($) {
                
             });
+            var width = '950';
+            <%
+        	//TODO role에 따라서 변하도록 한다.
+          	if(isProcess){
+        	%>
+        	width = '800';
+        	<%
+        	}
+        	%>
             
     		$(function(){
      			$("#encProcessList").jqGrid({  
@@ -96,27 +108,32 @@
      				//응답값
      				datatype: "json",
      				styleUI : 'Bootstrap',
-     			   	colNames:['Schema','Table','Column','생성일','진행현황','만료일'],
+     			   	colNames:['Schema','Table','Column','생성일','진행현황','만료일','권한자'],
      			   	colModel:[
     					/* {name:'row',align: "center", key: true,formatter:'checkbox', editable: true, edittype: 'checkbox', editoptions: { value: "True:False" }, formatoptions: { disabled: false},width:"30"}, */
-     			   		{name:'schemaNm', index:'CheckResult',align: "center"},
-     			   		{name:'tableNm', index:'CheckResult',align: "center"},
-     			   		{name:'columnNm',align: "center"},
-     			   		{name:'startDate',align: "center"},
-     			   		{name:'status',align: "center"},
-     			   		{name:'endDate',align: "center"}
+     			   		{name:'schemaNm', index:'CheckResult',align: "left", sortable:false, width:"200"},
+     			   		{name:'tableNm', index:'CheckResult',align: "left", sortable:false, width:"250"},
+     			   		{name:'columnNm',align: "left", sortable:false, width:width},
+     			   		{name:'startDate',align: "center", sortable:false, width:"130"},
+     			   		{name:'status',align: "center", sortable:false, width:"130"},
+     			   		{name:'endDate',align: "center", sortable:false, width:"150"},
+     			   		{name:'ownerId',align: "left", width:"150",hidden:true}
      			   	],
      			   viewrecords: true, 
                    pager: "#jqGridPager",
                    rowNum : 15,
                    height : 'auto',
-                   autowidth : true,
-                   shrinkToFit:true, 
-                   /* shrinkToFit : false, */
-    			   viewrecords: true
-    			   /* rownumbers:true,
-    			   rownumWidth:40 */
-
+    			   viewrecords: true,
+    			   loadComplete : function(data){
+    				    <%
+	   		        	//TODO role에 따라서 변하도록 한다.
+	   		          	if(isProcess){
+	   		        	%>
+	   		        	$("#encProcessList").showCol("ownerId");
+	   		        	<%
+	   		        	}
+	   		        	%>    
+					}
      			});
      			
      		});         
@@ -184,14 +201,6 @@
     			   var radioHtml = '<input type="radio" value=' + value + ' name="radioid" />';
     			   return radioHtml;
     		}
-    		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
     	    
     	    $(function () {
     	        $('#datetimepicker6').datetimepicker({

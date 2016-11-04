@@ -21,7 +21,7 @@ public interface BbsService {
 	public BdapBbs devreqInsert(BdapBbs bdapBbs);
 	public void devreqDelete(BdapBbs bdapBbs);
 	
-	public List<BdapBbs> getNoticeList(SearchVO searchVO,int startNum,int rows,Pageable pageable);				//공지사항 리스트
+	public List<BdapBbs> getNoticeList(SearchVO searchVO,int startNum,int rows,Pageable pageable);				
 	
 	public Long getNoticeListCount(String bbsCode,SearchVO searchVO);
 	public Long getReferenceListCount(String bbsCode,SearchVO searchVO);
@@ -29,12 +29,13 @@ public interface BbsService {
 	
 	public List<BdapBbs> getList(String bbsType,int startnum,int size);
 	
-	public List<BdapBbs> getQnaList(SearchVO searchVO,int startNum,int rows);					//qna 리스트
-	public List<BdapBbs> getReferenceList(SearchVO searchVO,int startNum,int rows);			//게시판 리스트
-	public List<BdapBbs> getLinkageList(SearchVO searchVO,int startNum,int rows);				//자료 연동 리스트
-	public List<BdapBbs> getDevreqList(SearchVO searchVO,int startNum,int rows);				//개발 요청 리스트
+	public List<BdapBbs> getQnaList(SearchVO searchVO,int startNum,int rows);					
+	public List<BdapBbs> getReferenceList(SearchVO searchVO,int startNum,int rows);			
+	public List<BdapBbs> getLinkageList(SearchVO searchVO,int startNum,int rows);				
+	public List<BdapBbs> getDevreqList(SearchVO searchVO,int startNum,int rows);				
 	
 	public BdapBbs getBbsbyId(String id);
+	public BdapBbs getQnaBbsbyId(String id);
 	public BdapBbs getQnabyId(String id);
 	public BdapBbs getReferencebyId(String id);
 	public BdapBbs getLinkagebyId(String id);

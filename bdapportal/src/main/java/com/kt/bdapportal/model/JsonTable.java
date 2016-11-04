@@ -1,5 +1,8 @@
 package com.kt.bdapportal.model;
 
+import java.sql.Date;
+import java.util.Calendar;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,6 +26,8 @@ public class JsonTable {
 	@JsonProperty(value="sd")
 	JsonSerde sdInfo;
 	
+	private Date tblValidateDate;
+	
 	public JsonTable() {
 		super();
 	}
@@ -35,6 +40,19 @@ public class JsonTable {
 		this.tblCreate = tblCreate;
 		this.tblType = tblType;
 		this.sdInfo = sdInfo;
+		
+		// 영락이 확인해봐라.
+		Calendar cal = Calendar.getInstance(); 
+		cal.add(Calendar.MONTH, 2);
+		this.tblValidateDate = new java.sql.Date(cal.getTimeInMillis());
+	}
+	
+	public Date getTblValidateDate() {
+		return tblValidateDate;
+	}
+
+	public void setTblValidateDate(Date tblValidateDate) {
+		this.tblValidateDate = tblValidateDate;
 	}
 
 	public String getTblName() {
@@ -85,5 +103,18 @@ public class JsonTable {
 		this.sdInfo = sdInfo;
 	}
 	
-	
+
+	public JsonTable(JsonTable vo) {
+		super();
+		this.tblName = vo.tblName;
+		this.dbName = vo.dbName;
+		this.owner = vo.owner;
+		this.tblCreate = vo.tblCreate;
+		this.tblType = vo.tblType;
+		this.sdInfo = vo.sdInfo;
+		
+		Calendar cal = Calendar.getInstance(); 
+		cal.add(Calendar.MONTH, 2);
+		this.tblValidateDate = new java.sql.Date(cal.getTimeInMillis());
+	}
 }

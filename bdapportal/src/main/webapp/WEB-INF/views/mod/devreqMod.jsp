@@ -93,7 +93,7 @@ String bbsPostId = (String)request.getAttribute("bbsPostId");
 	                                                <label class="col-md-3 control-label" style="text-align:left;">자료유형 :  </label>
 	                                                <div class="col-md-9">
 	                                                    <%-- <input class="form-control" type="text"  placeholder="제목을 입력 하세요." value="<%=bbs.getBbsCategory()%>"> --%>
-	                                                    <select class="selectpicker"  name="referenceType">
+	                                                    <select class="selectpicker"  data-width="auto" name="referenceType">
 														  <option value="func" <%=bbs.getBbsCategorySub().equals("func")?"selected":"" %>>기능</option>
 														  <option value="must" <%=bbs.getBbsCategorySub().equals("must")?"selected":"" %>>필독</option>
 														  <option value="etc" <%=bbs.getBbsCategorySub().equals("etc")?"selected":"" %>>기타</option>
@@ -150,7 +150,7 @@ String bbsPostId = (String)request.getAttribute("bbsPostId");
                           <div class="col-md-12 portlets">
                                 <!-- Your awesome content goes here -->
                                 <div class="m-b-30">
-                                    <form class="dropzone dz-clickable" id="dropzone" action="fileUpload" name="dropzone" method="post" enctype="multipart/form-data">
+                                    <form class="dropzone dz-clickable" id="dropzone" action="../fileUpload" name="dropzone" method="post" enctype="multipart/form-data">
                                     	<div class="dz-default dz-message"><span>file upload</span>
                                     	</div>
                                     </form>
@@ -177,6 +177,8 @@ String bbsPostId = (String)request.getAttribute("bbsPostId");
             <!-- Right Sidebar -->
 
         </div>
+        <link rel="stylesheet" href="<%=contextPath%>/resources/kt/css/dropzone.css" />
+        
         <!-- jqeury  -->
         <script src="<%=contextPath%>/resources/kt/js/jquery.min.js"></script>
         <script src="<%=contextPath%>/resources/js/jquery-ui.js" type="text/javascript"></script>
@@ -265,14 +267,6 @@ String bbsPostId = (String)request.getAttribute("bbsPostId");
     			   return radioHtml;
     		}
     		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
-    	    
     	    $(function () {
     	        $('#datetimepicker6').datetimepicker({
     	        	format: 'YYYY/MM/DD'

@@ -54,19 +54,38 @@
             <!-- <exclude-mapping path="/main/*"/> -->
             <exclude-mapping path="/**/login*.do"/>					<!-- acl interceptor -->
             <exclude-mapping path="/**/ktlist*.do"/>
+            <exclude-mapping path="/**/mainPage*.do"/>
+            <exclude-mapping path="/hive/metastore/event/listener/entitytype/TABLE/eventType/CREATE"/>
+            <exclude-mapping path="/hive/metastore/event/listener/entitytype/TABLE/eventType/ALTER"/>
+            <exclude-mapping path="/hive/metastore/event/listener/entitytype/TABLE/eventType/DROP"/>
+            <exclude-mapping path="/ndap/workflowAll"/>
+            <exclude-mapping path="/ndap/workflowEach"/>
+            <exclude-mapping path="/**/nopermission*.do"/>
             <beans:bean class="com.kt.bdapportal.common.AclInterceptor"></beans:bean>            
         </interceptor> 
         
         <interceptor>
-            <mapping path="/**/reg.do" />
-            <mapping path="/**/mod.do" />
-            <mapping path="/**/del.do" />
-            <mapping path="/**/update.do" />
+            <mapping path="/**/notice/*.do" />
+            <mapping path="/**/qna/*.do" />
+            <mapping path="/**/reference/*.do" />
+            <mapping path="/**/linkage/*.do" />
+            <mapping path="/**/devreq/*.do" />
+            <mapping path="/**/enc*.do" />
+            <mapping path="/**/dec*.do" />
+            <mapping path="/**/*table*.do" />
+            
             <!-- <exclude-mapping path="/main/*"/> -->
             <exclude-mapping path="/**/login*.do"/>					<!-- role interceptor -->
             <exclude-mapping path="/**/ktlist*.do"/>
-            <!-- <exclude-mapping path="/**/ktlist*.do"/> -->
+            <exclude-mapping path="/**/nopermission*.do"/>
             <beans:bean class="com.kt.bdapportal.common.RoleInterceptor"></beans:bean>            
+        </interceptor> 
+        
+        <interceptor>
+            <mapping path="/**/*.do" />
+            <exclude-mapping path="/**/login*.do"/>	
+            <exclude-mapping path="/**/nopermission*.do"/>
+            <beans:bean class="com.kt.bdapportal.common.SessionInterceptor"></beans:bean>            
         </interceptor> 
                
     </interceptors>

@@ -43,34 +43,12 @@
         <link href="<%=contextPath%>/resources/kt/css/menu.css" rel="stylesheet" type="text/css">
         <link href="<%=contextPath%>/resources/kt/css/responsive.css" rel="stylesheet" type="text/css">
 
-        <script src="//www.google-analytics.com/analytics.js" async=""></script><script src="<%=contextPath%>/resources/kt/js/modernizr.min.js"></script>
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        
-        
+        <script src="<%=contextPath%>/resources/kt/js/modernizr.min.js"></script>
 		<link rel="stylesheet" type="text/css" media="screen" href="<%=contextPath%>/resources/css/jquery-ui.css" />
 		<link rel="stylesheet" type="text/css" media="screen" href="<%=contextPath%>/resources/jqgrid/css/ui.jqgrid.css" />
 		<link rel="stylesheet" type="text/css" media="screen" href="<%=contextPath%>/resources/jqgrid/css/ui.jqgrid-bootstrap.css" />
 		<link rel="stylesheet" type="text/css" href="<%=contextPath%>/resources/kt/css/bootstrap-select.css" />
 	
-	
-	
-	
-        <script>
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-            ga('create', 'UA-72255993-1', 'auto');
-            ga('send', 'pageview');
-        </script>
-
-        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-       
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-       
        
        <%-- <link rel="stylesheet" href="<%=contextPath%>/resources/kt/images/style.css" type="text/css"> --%>
        <script src="<%=contextPath%>/resources/kt/amcharts/amcharts.js" type="text/javascript"></script>
@@ -207,33 +185,36 @@
 
         <script type="text/javascript">
             jQuery(document).ready(function($) {
-                $('.counter').counterUp({
-                    delay: 100,
-                    time: 1200
+            	$('#datetimepicker1').datetimepicker({
+                   	format: 'YYYY/MM/DD'
                 });
-                $('.circliful-chart').circliful();
+            	
+            	var conW = $(".popup_wrap").innerWidth(); //컨텐트 사이즈
+                var conH = $(".popup_wrap").innerHeight();
+            
+                var winOuterW = window.outerWidth; //브라우저 전체 사이즈
+                var winOuterH = window.outerHeight;
+                
+                var winInnerW = window.innerWidth; //스크롤 포함한 body영역
+                var winInnerH = window.innerHeight;
+                
+                var winOffSetW = window.document.body.offsetWidth; //스크롤 제외한 body영역
+                var winOffSetH = window.document.body.offsetHeight;
+                
+                var borderW = winOuterW - winInnerW;
+                var borderH = winOuterH - winInnerH;
+                
+                
+                winResizeW = conW + borderW;
+            	
+            	$("#datetimepicker1").on("dp.show", function(e) {
+            		window.resizeTo('546','450');
+                });
+            	$("#datetimepicker1").on("dp.hide", function(e) {
+            		window.resizeTo('546','270');
+                });
             });
 
-            /* BEGIN SVG WEATHER ICON */
-            if (typeof Skycons !== 'undefined'){
-            var icons = new Skycons(
-                {"color": "#3bafda"},
-                {"resizeClear": true}
-                ),
-                    list  = [
-                        "clear-day", "clear-night", "partly-cloudy-day",
-                        "partly-cloudy-night", "cloudy", "rain", "sleet", "snow", "wind",
-                        "fog"
-                    ],
-                    i;
-
-                for(i = list.length; i--; )
-                icons.set(list[i], list[i]);
-                icons.play();
-            };
-
-            
-    	
     		
     		function winclose(){
     			self.close();
@@ -247,47 +228,6 @@
     			}
     			
     		}
-    	
-    	
-    		
-    		function emer(value, options, rowObject){
-  			   var radioHtml = '<p class="label label-danger" style="width:100px; margin-top:15px; margin-left:0px; text-align:left">긴급</p>&nbsp;&nbsp;&nbsp;'+value;
-  			   return radioHtml;
-  			}
-    		
-    		
-    		function question(value, options, rowObject){
- 			   var radioHtml = '<p class="label label-success" style="width:100px; margin-top:15px; margin-left:0px; background-color:#5cb85c; text-align:left">질문</p>&nbsp;&nbsp;&nbsp;'+value;
- 			   return radioHtml;
- 			}
-    		
-    		
-    		
-    		function radio(value, options, rowObject){
-    			   var radioHtml = '<input type="radio" value=' + value + ' name="radioid" />';
-    			   return radioHtml;
-    		}
-    		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
-    	    
-    	    $(function () {
-    	    	
-                   $('#datetimepicker1').datetimepicker({
-                   	format: 'YYYY/MM/DD'
-                   });
-            
-    	    }); 
-    	    
-    	    
-    	    
         </script>
-    
-    
 </body>
 </html>

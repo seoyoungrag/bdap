@@ -32,7 +32,15 @@ public class SearchVO {
 	private long total;
 	
 	// USER QUERY MANAGEMENT
-	private int term;
+	private int termTime;
+	private String termStatus;
+	
+	// 통계
+	private String command;
+	
+	// Schema Management
+	private String schemaNm;
+	private String tblNm;
 	
 	public String[] getSearchTypes() {
 		return searchTypes;
@@ -40,13 +48,6 @@ public class SearchVO {
 	public void setSearchTypes(String[] searchTypes) {
 		this.searchTypes = searchTypes;
 	}
-
-	// 통계
-	private String command;
-	
-	// Schema Management
-	private String schemaNm;
-	private String tblNm;
 	
 	public String getSchemaNm() {
 		return schemaNm;
@@ -100,11 +101,17 @@ public class SearchVO {
 		this.listCount = listCount;
 	}
 	
-	public int getTerm() {
-		return term;
+	public String getTermStatus() {
+		return termStatus;
 	}
-	public void setTerm(int term) {
-		this.term = term;
+	public void setTermStatus(String termStatus) {
+		this.termStatus = termStatus;
+	}
+	public int getTermTime() {
+		return termTime;
+	}
+	public void setTermTime(int termTime) {
+		this.termTime = termTime;
 	}
 	public String getEmergencyYn() {
 		return emergencyYn;

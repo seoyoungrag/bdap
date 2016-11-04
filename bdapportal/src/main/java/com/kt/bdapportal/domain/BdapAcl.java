@@ -32,7 +32,10 @@ public class BdapAcl {
 
 	@Column(name = "ACL_PARENT_ID", nullable = true)
 	private String aclParentId;
-
+	
+	@Column(name = "ACL_URI", nullable = true)
+	private String aclUri;
+	
 	@ManyToOne
 	@JoinColumn(name = "ACL_PARENT_ID", insertable = false, updatable = false)
 	private BdapAcl parent;
@@ -40,6 +43,14 @@ public class BdapAcl {
 	@OneToMany(mappedBy = "parent", fetch = FetchType.EAGER)
 	private List<BdapAcl> children;
 	
+	public String getAclUri() {
+		return aclUri;
+	}
+
+	public void setAclUri(String aclUri) {
+		this.aclUri = aclUri;
+	}
+
 	public String getAclId() {
 		return aclId;
 	}

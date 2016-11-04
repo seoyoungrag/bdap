@@ -33,6 +33,7 @@ import com.kt.bdapportal.domain.BdapBbsCategory;
 import com.kt.bdapportal.domain.BdapComment;
 import com.kt.bdapportal.domain.BdapFile;
 import com.kt.bdapportal.domain.BdapQna;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.service.BbsService;
 import com.kt.bdapportal.service.CategoryService;
 import com.kt.bdapportal.service.CommentService;
@@ -72,7 +73,6 @@ public class QnaController {
 		ModelAndView mav = new ModelAndView("/list/qnaList");
 		
 		try{
-			
 			request.setCharacterEncoding("UTF-8");
 			
 			String processStatus = (String)request.getParameter("processStatus");				
@@ -82,6 +82,9 @@ public class QnaController {
 			String searchType = (String)request.getParameter("searchType");				//searchType
 			String searchWord = (String)request.getParameter("searchWord");				//searchWord
 			String question = (String)request.getParameter("question");		
+			String category = (String)request.getParameter("category");		
+			
+			
 			
 			SearchVO searchVO = new SearchVO();
 			
@@ -91,6 +94,7 @@ public class QnaController {
 			endDate = searchVO.nullTrim(endDate);
 			searchType = searchVO.nullTrim(searchType);
 			searchWord = searchVO.nullTrim(searchWord);
+			category = searchVO.nullTrim(category);
 			question = searchVO.nullTrim(question,"N");
 			
 			char status = ' ';
@@ -107,6 +111,8 @@ public class QnaController {
 				mineYn = 'Y';
 			}
 			
+			List<BdapBbsCategory> bdapBbsCategory =  categoryService.bdapBbsCategory(BbsConstant.QNA_CODE);
+			mav.addObject("bdapBbsCategory", bdapBbsCategory);
 			
 			searchVO.setProcessStatus(status);
 			searchVO.setMinePostYN(mineYn);
@@ -115,20 +121,14 @@ public class QnaController {
 			searchVO.setSearchType(searchType);
 			searchVO.setSearchWord(searchWord);
 			searchVO.setQuestionYn(question);
+			searchVO.setCategory(category);
 			
 			mav.addObject("searchVO", searchVO);	
-			
-			
 		}catch(Exception e){
 			e.printStackTrace();	
-		}finally{
-			
 		}
-	
-	return mav;
-	
+		return mav;
 	}
-	
 	
 	@RequestMapping("/getQnaList.do")						
 	public void getQnaList(HttpServletRequest request, HttpServletResponse response, @PageableDefault(sort = { "BBS_REG_DT" }, direction = Direction.DESC, size = 15) Pageable pageable) {
@@ -137,7 +137,7 @@ public class QnaController {
 			
 			request.setCharacterEncoding("UTF-8");
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			
 			String processStatus = (String)request.getParameter("processStatus");				
 			String minePostYN = (String)request.getParameter("minePostYN");		
@@ -147,6 +147,7 @@ public class QnaController {
 			String endDate = (String)request.getParameter("endDate");					//endDate
 			String searchType = (String)request.getParameter("searchType");				//searchType
 			String searchWord = (String)request.getParameter("searchWord");				//searchWord
+			String category = (String)request.getParameter("category");	
 			
 			char status = ' ';
 			if(processStatus.equals("P")){
@@ -162,12 +163,6 @@ public class QnaController {
 				mineYn = 'Y';
 			}
 			
-			JSONObject jsonObj = new JSONObject();
-			int page = Integer.parseInt((String)request.getParameter("page"));
-			jsonObj.put("page", String.valueOf(page));
-			int count = 0;
-			int rows = Integer.parseInt((String)request.getParameter("rows"));
-			
 			SearchVO searchVO = new SearchVO();
 			
 			searchVO.setProcessStatus(status);
@@ -177,16 +172,31 @@ public class QnaController {
 			searchVO.setEndDate(endDate);
 			searchVO.setSearchType(searchType);
 			searchVO.setSearchWord(searchWord);
-			searchVO.setUserId(userId);
+			searchVO.setUserId(bdapUser.getUserId());
+			searchVO.setPaging(request);
+			searchVO.setCategory(category);
 			
-			int startnum = (page-1)*rows;				
+			JSONObject jsonObj = new JSONObject();
+			jsonObj.put("page", String.valueOf(searchVO.getPage()));
 			
-			List<BdapBbs> bbsList =	bbsService.getQnaList(searchVO,startnum,rows);	
+			List<BdapBbs> bbsList =	bbsService.getQnaList(searchVO,searchVO.getStartNum(),searchVO.getRows());	
 			
 			long qnaListCount = bbsService.getQnaListCount(BbsConstant.QNA_CODE,searchVO);
 			long qnaStatusProcess = qnaService.qnaStatus(BbsConstant.QNA_STATUS_PROCESS);
 			long qnaStatusComplete = qnaService.qnaStatus(BbsConstant.QNA_STATUS_COMPLETE);
 			long qnaStatusProcessReq = qnaService.qnaStatus(BbsConstant.QNA_STATUS_REQ);
+			//서브쿼리 안쓰고 따로 불렀음.
+			for(BdapBbs bbs : bbsList){
+				long count = commentService.countByCmtParentBbsId(bbs.getBbsId());
+				if(count!=0){
+					StringBuffer sb = new StringBuffer(bbs.getBbsTitle());
+					sb.append("[");
+					sb.append(count);
+					sb.append("]");
+					bbs.setBbsTitle(sb.toString());
+				}
+			}
+			
 			
 			int bbsListSize = bbsList.size();
 			
@@ -212,7 +222,7 @@ public class QnaController {
 				
 				jsonObj1.put("wirterName", bbs.getBbsWriterNm());
 				jsonObj1.put("wirterId", bbs.getBbsWriterId());
-				jsonObj1.put("regDate", bbs.getBbsRegDt().toString());
+				jsonObj1.put("regDate", bbs.getFormatBbsRegDt());
 				if(bbs.getBbsParentBbsId() == null){
 					jsonObj1.put("parentId", "");						
 				}else{
@@ -221,10 +231,11 @@ public class QnaController {
 				
 				jsonArray.add(jsonObj1);
 			}
+			searchVO.setListCount(qnaListCount);
+			searchVO.setLastPage();
 			
-			int forLastPage = (qnaListCount % rows > 0)? 1:0;
 			jsonObj.put("records", qnaListCount);
-			jsonObj.put("total", (qnaListCount/rows)+forLastPage) ;
+			jsonObj.put("total", searchVO.getTotal()) ;
 			jsonObj.put("rows", jsonArray);
 			
 			jsonObj.put("qnaStatusProcess", qnaStatusProcess);
@@ -248,10 +259,7 @@ public class QnaController {
 		try {
 
 			HttpSession session = request.getSession();
-			
-			String userId = (String)session.getAttribute("USER_ID");
-			String userNm = (String)session.getAttribute("USER_NM");
-			String userMail = (String)session.getAttribute("USER_MAIL");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			request.setCharacterEncoding("UTF-8");
 			
 			String title = (String)request.getParameter("title");
@@ -277,9 +285,9 @@ public class QnaController {
 			bdapBbs.setBbsEmergencyYn('N');
 			bdapBbs.setBbsContent(content);
 			bdapBbs.setBbsHit(0);
-			bdapBbs.setBbsWriterId(userId);
-			bdapBbs.setBbsWriterEmail(userMail);			
-			bdapBbs.setBbsWriterNm(userNm);
+			bdapBbs.setBbsWriterId(bdapUser.getUserId());
+			bdapBbs.setBbsWriterEmail(bdapUser.getUserEmail());
+			bdapBbs.setBbsWriterNm(bdapUser.getUserNm());
 			bdapBbs.setBbsCategorySub(categorySub);
 			
 			bdapBbs = bbsService.qnaInsert(bdapBbs);
@@ -308,9 +316,9 @@ public class QnaController {
 			if(!fileListArr.equals("")){
 				String[] fileList = fileListArr.split("\\*");
 				
-				if(fileList.length != 0){
+				if(fileList.length != 0 && fileListArr.contains("*")){
 					
-					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 					String filePath = BbsConstant.FILE_STORE_PATH;
 					
 					File directory = new File(filePath);
@@ -375,26 +383,28 @@ public class QnaController {
 		try{
 			
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			String bbsPostId = (String)request.getParameter("bbsPostId");
 			
+			// 로직이 좀 이상해졌다. 카테고리와 서브 카테고리의 한글명을 가져오기 위해 서브쿼리를 썼는데 아래에서 히트카운트 올릴때 업데이트가 되어버린다.
+			// 일단 한글명으로 들고오지 말고 히트카운트 증가시킨 후에 한글명으로 다시 들고온다.
 			BdapBbs bbs = bbsService.getBbsbyId(bbsPostId);
 			BdapQna bbsQna = qnaService.getQnabyId(bbsPostId);
-			String fileName = "";
+			StringBuffer fileName = new StringBuffer();
 	 	       
 			int hit = bbs.getBbsHit();
 			bbs.setBbsHit(++hit);
 			bbsService.qnaInsert(bbs);
 			
+			bbs = bbsService.getQnaBbsbyId(bbsPostId);
 			
  	        List<BdapFile> bdapFileList =  fileService.getFileListbyParentId(bbsPostId);
- 	       List<BdapComment> bdapCmtList = commentService.getCommentList(bbsPostId);
- 	       long cmtCount = commentService.countByCmtParentBbsId(bbsPostId);
+ 	        List<BdapComment> bdapCmtList = commentService.getCommentList(bbsPostId);
+ 	        long cmtCount = commentService.countByCmtParentBbsId(bbsPostId);
 			
  	        if(bdapFileList.size() > 0){
  	        	String fileStorePath = BbsConstant.FILE_STORE_PATH;
- 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+ 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator + bbs.getBbsWriterId();;
  				
  				File directory = new File(fileTempPath);
  		        if(directory.exists() == false){
@@ -427,7 +437,7 @@ public class QnaController {
  						outputStream.close();
  						inputStream.close();						
  						
- 	 					fileName += bdapFile.getFleDisplayNm()+"*";	
+ 						fileName.append(bdapFile.getFleDisplayNm()).append("*");
  					}
  				}
  	        }
@@ -435,7 +445,7 @@ public class QnaController {
  	        mav.addObject("cmtCount", cmtCount);
  	        mav.addObject("bdapCmtList", bdapCmtList);
  	        mav.addObject("qnaSubView", bbsQna);
-			mav.addObject("fileName", fileName);
+			mav.addObject("fileName", fileName.toString());
 			mav.addObject("bbsPostId", bbsPostId);
 			mav.addObject("title", bbs.getBbsTitle());
 			mav.addObject("systemName", bbs.getBbsCategory());
@@ -493,18 +503,23 @@ public class QnaController {
 		ModelAndView mav = new ModelAndView("/mod/qnaMod");
 		
 		try{
+			List<BdapBbsCategory> bdapBbsCategory =  categoryService.bdapBbsCategory(BbsConstant.QNA_CODE);
+			List<BdapBbsCategory> bdapBbsCategorySub =  categoryService.bdapSubBbsCategory(BbsConstant.QNA_CODE,bdapBbsCategory.get(0).getCateId());
+			mav.addObject("bdapBbsCategory", bdapBbsCategory);
+			mav.addObject("bdapBbsCategorySub", bdapBbsCategorySub);
+			
 			String bbsPostId = (String)request.getParameter("bbsPostId");
 			BdapBbs bdapBbs = bbsService.getBbsbyId(bbsPostId);
 			BdapQna bbsQna = qnaService.getQnabyId(bbsPostId);
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String fileName = "";
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
+			StringBuffer fileName = new StringBuffer();
 		       
 	        List<BdapFile> bdapFileList =  fileService.getFileListbyParentId(bbsPostId);
 		
 	        if(bdapFileList.size() > 0){
 	        	String fileStorePath = BbsConstant.FILE_STORE_PATH;
-				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 				
 				File directory = new File(fileTempPath);
 		        if(directory.exists() == false){
@@ -536,11 +551,11 @@ public class QnaController {
 					outputStream.close();
 					inputStream.close();
 					
-					fileName += bdapFile.getFleDisplayNm()+"*"; 
+					fileName.append(bdapFile.getFleDisplayNm()).append("*");
 				}
 	        	
 	        }
-	        mav.addObject("fileName", fileName);
+	        mav.addObject("fileName", fileName.toString());
 			mav.addObject("bbsPostId",bbsPostId);
 			mav.addObject("qnaView",bdapBbs);
 			mav.addObject("qnaViewSub",bbsQna);
@@ -589,9 +604,7 @@ public class QnaController {
 		try{
 			
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String userNm = (String)session.getAttribute("USER_NM");
-			String userMail = (String)session.getAttribute("USER_MAIL");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			request.setCharacterEncoding("UTF-8");
 			
 			String title = (String)request.getParameter("title");
@@ -618,9 +631,9 @@ public class QnaController {
 			bdapBbs.setBbsEmergencyYn('N');
 			bdapBbs.setBbsContent(content);
 			bdapBbs.setBbsHit(0);
-			bdapBbs.setBbsWriterId(userId);
-			bdapBbs.setBbsWriterEmail(userMail);			
-			bdapBbs.setBbsWriterNm(userNm);
+			bdapBbs.setBbsWriterId(bdapUser.getUserId());
+			bdapBbs.setBbsWriterEmail(bdapUser.getUserEmail());
+			bdapBbs.setBbsWriterNm(bdapUser.getUserNm());
 			bdapBbs.setBbsCategorySub(categorySub);
 			
 			bdapBbs = bbsService.qnaInsert(bdapBbs);
@@ -660,7 +673,7 @@ public class QnaController {
 						
 			if(fileListArr.contains("*")){
 				
-				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 				String filePath = BbsConstant.FILE_STORE_PATH;
 				
 				File directory = new File(filePath);
@@ -725,14 +738,14 @@ public class QnaController {
 			BdapBbs bdapBbs = bbsService.getBbsbyId(bbsPostId);
 			BdapQna bbsQna = qnaService.getQnabyId(bbsPostId);
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String fileName = "";
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
+			StringBuffer fileName = new StringBuffer();
 		       
 	        List<BdapFile> bdapFileList =  fileService.getFileListbyParentId(bbsPostId);
 		
 	        if(bdapFileList.size() > 0){
 	        	String fileStorePath = BbsConstant.FILE_STORE_PATH;
-				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 				
 				File directory = new File(fileTempPath);
 		        if(directory.exists() == false){
@@ -764,12 +777,12 @@ public class QnaController {
 						  
 						outputStream.close();
 						inputStream.close();
-						fileName += bdapFile.getFleDisplayNm()+"*";	
+						fileName.append(bdapFile.getFleDisplayNm()).append("*");
 					}
 				}
 	        	
 	        }
-	        mav.addObject("fileName", fileName);
+	        mav.addObject("fileName", fileName.toString());
 			mav.addObject("bbsPostId",bbsPostId);
 			mav.addObject("qnaView",bdapBbs);
 			mav.addObject("qnaViewSub",bbsQna);

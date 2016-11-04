@@ -2,8 +2,11 @@
     pageEncoding="utf-8"%>
     
 <%
-  String test = (String)request.getAttribute("test");
-  String contextPath = (String)request.getContextPath();
+	String test = (String)request.getAttribute("test");
+	String contextPath = (String)request.getContextPath();
+	
+	boolean isAdmin = (Boolean)session.getAttribute("isAdmin");
+	boolean isProcess = (Boolean)session.getAttribute("isProcess");
 %>    
     
 <!DOCTYPE html>
@@ -107,6 +110,16 @@
             jQuery(document).ready(function($) {
                
             });
+            
+            var width = '950';
+            <%
+        	//TODO role에 따라서 변하도록 한다.
+          	if(isProcess){
+        	%>
+        	width = '800';
+        	<%
+        	}
+        	%>
 
     		$(function(){
      			$("#decRoleList").jqGrid({  
@@ -115,22 +128,31 @@
      				//응답값
      				datatype: "json",
      				styleUI : 'Bootstrap',
-     			   	colNames:['Schema','Table','Column','권한 부여일','권한 만료일','유효여부'],
+     			   	colNames:['Schema','Table','Column','권한 부여일','권한 만료일','유효여부','권한자'],
      			   	colModel:[
-     			   		{name:'schemaNm', index:'CheckResult',align: "center"},
-     			   		{name:'tableNm',align: "center"},
-     			   		{name:'columnNm',align: "center"},
-     			   		{name:'startDate',align: "center"},
-     			   		{name:'endDate',align: "center"},
-     			   		{name:'isVal', index:'CheckResult',align: "center"}
+	     			   	{name:'schemaNm', index:'CheckResult',align: "left", sortable:false, width:"200"},
+	 			   		{name:'tableNm', index:'CheckResult',align: "left", sortable:false, width:"250"},
+	 			   		{name:'columnNm',align: "left", sortable:false, width:width},
+	 			   		{name:'startDate',align: "center", sortable:false, width:"130"},
+	 			   		{name:'endDate',align: "center", sortable:false, width:"130"},
+	 			   		{name:'isVal',align: "center", index:'CheckResult', sortable:false, width:"150"},
+	 			   		{name:'ownerId',align: "left", width:"150",hidden:true}
      			   	],
      			   viewrecords: true, 
                    pager: "#jqGridPager",
                    rowNum : 15,
                    height : 'auto',
-                   autowidth : true,
-                   shrinkToFit:true, 
-    			   viewrecords: true
+    			   viewrecords: true,
+    			   loadComplete : function(data){
+    				   <%
+	   		        	//TODO role에 따라서 변하도록 한다.
+	   		          	if(isProcess){
+	   		        	%>
+	   		        	$("#decRoleList").showCol("ownerId");
+	   		        	<%
+	   		        	}
+	   		        	%>    
+					}
      			});
      			
      		});         
@@ -199,14 +221,6 @@
     			   return radioHtml;
     		}
     		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
-    	    
     	    $(function () {
     	        $('#datetimepicker6').datetimepicker({
     	        	format: 'YYYY/MM/DD'

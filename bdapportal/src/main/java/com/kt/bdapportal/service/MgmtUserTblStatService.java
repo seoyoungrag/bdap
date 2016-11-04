@@ -10,5 +10,7 @@ public interface MgmtUserTblStatService {
 	public Long getUsage(String userId);
 	public Long getUserAreaUsage();	
 	public List<MgmtUserTblStat> getUserUsage(SearchVO searchVO);
-	
+	public Long getUserUsageCount();
+	public List<MgmtUserTblStat> getUserUsageAlluser(SearchVO searchVO);
+	public Long getManagedAreaUsage();
 }

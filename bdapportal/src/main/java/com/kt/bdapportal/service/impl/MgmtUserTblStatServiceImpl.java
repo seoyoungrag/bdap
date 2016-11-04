@@ -17,7 +17,17 @@ public class MgmtUserTblStatServiceImpl implements MgmtUserTblStatService {
 	@Autowired
 	private MgmtUserTblStatRepository mgmtUserTblStatRepository; 
 	
-	
+	public Long getManagedAreaUsage(){
+		
+		Long usage  = 0L;
+		
+		MgmtUserTblStat mgmtTbl = mgmtUserTblStatRepository.managedAreaUsage();
+		
+		if(mgmtTbl != null){
+			usage = mgmtTbl.getTblSize();	
+		}
+		return usage;
+	}
 	
 	public Long getUserAreaUsage(){
 		
@@ -44,7 +54,29 @@ public class MgmtUserTblStatServiceImpl implements MgmtUserTblStatService {
 	public List<MgmtUserTblStat> getUserUsage(SearchVO searchVO){
 		List<MgmtUserTblStat> mtmtUserTblStatList = new ArrayList<MgmtUserTblStat>();
 		try{
-			mtmtUserTblStatList = mgmtUserTblStatRepository.userUsageSearch(searchVO.getStartDate(),searchVO.getEndDate());
+			mtmtUserTblStatList = mgmtUserTblStatRepository.userUsageSearch(searchVO);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return mtmtUserTblStatList;
+	}
+
+	@Override
+	public Long getUserUsageCount() {
+		Long mgmtQryHistListCount = 0L;
+		try{
+			mgmtQryHistListCount = mgmtUserTblStatRepository.userUsageSearchCount();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return mgmtQryHistListCount;
+	}
+
+	@Override
+	public List<MgmtUserTblStat> getUserUsageAlluser(SearchVO searchVO) {
+		List<MgmtUserTblStat> mtmtUserTblStatList = new ArrayList<MgmtUserTblStat>();
+		try{
+			mtmtUserTblStatList = mgmtUserTblStatRepository.userUsageSearchAll(searchVO);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

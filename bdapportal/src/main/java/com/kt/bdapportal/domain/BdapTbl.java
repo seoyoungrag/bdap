@@ -32,7 +32,7 @@ public class BdapTbl {
 	private String tblKorNm;
 
 	@Column(name = "TBL_ENG_NM", nullable = false)
-	private String tblEngNM;
+	private String tblEngNm;
 
 	@Column(name = "TBL_IS_CHK_NULL", nullable = false)
 	private char tblIsChkNull = 'N';
@@ -91,7 +91,7 @@ public class BdapTbl {
 		super();
 		this.tblId = tblId;
 		this.tblKorNm = tblKorNm;
-		this.tblEngNM = tblEngNM;
+		this.tblEngNm = tblEngNM;
 		this.tblIsChkNull = tblIsChkNull;
 		this.tblIsChkType = tblIsChkType;
 		this.tblCreateDt = tblCreateDt;
@@ -139,11 +139,11 @@ public class BdapTbl {
 	}
 
 	public String getTblEngNM() {
-		return tblEngNM;
+		return tblEngNm;
 	}
 
 	public void setTblEngNM(String tblEngNM) {
-		this.tblEngNM = tblEngNM;
+		this.tblEngNm = tblEngNM;
 	}
 
 	public char getTblIsChkNull() {
@@ -246,7 +246,7 @@ public class BdapTbl {
 		super();
 		this.tblId = vo.tblId;
 		this.tblKorNm = vo.tblKorNm;
-		this.tblEngNM = vo.tblEngNM;
+		this.tblEngNm = vo.tblEngNm;
 		this.tblIsChkNull = vo.tblIsChkNull;
 		this.tblIsChkType = vo.tblIsChkType;
 		this.tblCreateDt = vo.tblCreateDt;

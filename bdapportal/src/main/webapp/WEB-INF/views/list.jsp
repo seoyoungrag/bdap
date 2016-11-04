@@ -95,13 +95,6 @@
  			});
  		});
      
- 	    function ItemCheckInfo(cellValue, options, rowObject) {
- 	    	 var checkResult = "";
- 	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
- 	         return checkResult;
-
- 	    }	
- 	    
  		function test(){
 
 			var actionURL = "<%=contextPath%>/thumbnailFileDel.do";
@@ -121,7 +114,5 @@
  		
  		
     </script>
-	 <!-- <img src="C:/Users/sourcream/Desktop/요구사항/image/1.jpg" /> -->
-	
 </body>
 </html>

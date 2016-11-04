@@ -34,7 +34,7 @@
                     <div class="container">
                 		<form class="form-horizontal" role="form" id="noticeRegForm" name="noticeRegForm" method="post" action="<%=contextPath%>/notice/insert.do" accept-charset="utf-8">
 						<h4 class="m-t-0 header-title" style="padding:10px;"><b>공지사항 등록</b></h4>
-						
+						<input name="category" type="hidden" value="BDAP" />
                         <div class="col-sm-12" style="">
                        		<div class="card-box" style="">
                        			<div class="row">
@@ -57,17 +57,17 @@
                                            </div>
                         				</div>
                         				<div class="col-md-6" style="padding-right:20px;">
-                                            <div class="form-group" style="margin-bottom:10px;">
+                                           <!--  <div class="form-group" style="margin-bottom:10px;">
                                                 <label class="col-md-3 control-label" style="text-align:left;">시스템 명 :  </label>
                                                 <div class="col-md-9">
-                                                    <!-- <input class="form-control" id="systemName" name="systemName" type="text" placeholder="시스템명를 입력 하세요."> -->
+                                                    <input class="form-control" id="systemName" name="systemName" type="text" placeholder="시스템명를 입력 하세요.">
                                                	   <select class="selectpicker" name="category">
 													  <option value="BDAP">BDAP</option>
 													  <option value="KDAP">KDAP</option>
 													  <option value="BIDW">BIDW</option>
 													</select>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="form-group" style="margin-bottom:17px;">
                                                 <label class="col-md-3 control-label" style="text-align:left;">긴급여부 : </label>
                                                 <div class="col-md-6">
@@ -122,6 +122,8 @@
             </div>
         </div>
         <!-- END wrapper -->
+        <link rel="stylesheet" href="<%=contextPath%>/resources/kt/css/dropzone.css" />
+        
 		<!-- jqeury  -->
         <script src="<%=contextPath%>/resources/kt/js/jquery.min.js"></script>
         <script src="<%=contextPath%>/resources/js/jquery-ui.js" type="text/javascript"></script>

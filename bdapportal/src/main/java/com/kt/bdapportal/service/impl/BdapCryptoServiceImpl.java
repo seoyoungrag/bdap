@@ -35,6 +35,15 @@ public class BdapCryptoServiceImpl implements BdapCryptoService{
 		return bdapCrypto;
 	}
 	
+	public List<BdapCrypto> getEncDecList(char crtType,int startNum,int rows){
+		
+		List<BdapCrypto> bdapCrypto = new ArrayList<BdapCrypto>();
+		
+		bdapCrypto = bdapCryptoRepository.encDecList(crtType,startNum,rows); 
+		
+		return bdapCrypto;
+	}
+
 	public List<BdapCrypto> getEncDecList(String userId,char crtType,int startNum,int rows){
 		
 		List<BdapCrypto> bdapCrypto = new ArrayList<BdapCrypto>();
@@ -74,6 +83,15 @@ public Long getEncDecListCount(String userId,char crtType){
 }
 
 
+public Long getEncDecListCount(char crtType){
+	
+	Long encDecListCount = 0L;
+	encDecListCount = bdapCryptoRepository.encDecListCount(crtType);
+
+	return encDecListCount; 
+}
+
+
 public Long getDecRoleListCount(char crtType,String crtStatus){
 
 	Long decRoleListCount = 0L;
@@ -102,6 +120,43 @@ public BdapCrypto getBdapCryptoByCryptoId(String id){
 	
 	BdapCrypto bdapCrypto = bdapCryptoRepository.getBdapCryptoByCryptoId(id);
 	return bdapCrypto;
+}
+
+@Override
+public List<BdapCrypto> getEncProcessList(String userId, char crtType, int startNum, int rows) {
+	List<BdapCrypto> bdapCrypto = new ArrayList<BdapCrypto>();
+	
+	bdapCrypto = bdapCryptoRepository.encProcessList(userId, crtType, startNum,rows);
+	
+	return bdapCrypto;
+}
+
+@Override
+public Long getEncProcessListCount(String userId, char crtType) {
+	
+	Long encProcessListCount = 0L;
+	encProcessListCount = bdapCryptoRepository.encProcessListCount(userId, crtType);
+	
+	return encProcessListCount;
+}
+
+@Override
+public List<BdapCrypto> getDecRoleList(String userId, char crtType, String crtStatus, int startNum, int rows) {
+	
+	List<BdapCrypto> bdapCrypto = new ArrayList<BdapCrypto>();
+	
+	bdapCrypto = bdapCryptoRepository.decRoleList(userId, crtType,crtStatus,startNum,rows);
+	
+	return bdapCrypto;
+}
+
+@Override
+public Long getDecRoleListCount(String userId, char crtType, String crtStatus) {
+
+	Long decRoleListCount = 0L;
+	decRoleListCount = bdapCryptoRepository.decRoleListCount(userId, crtType,crtStatus);
+
+	return decRoleListCount; 	
 }
 
 

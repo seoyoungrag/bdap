@@ -123,7 +123,7 @@ public class ExcelDownView extends AbstractXlsView {
 		
 		// 6. 상단 제목(날짜 정보 여부에 따라 등) 추가 셋팅
 		//
-		if(!titleDateList.isEmpty()){
+		if(titleDateList!= null && !titleDateList.isEmpty()){
 			sheet.createRow(titleDateRow);
 			for (int i = 0; i < titleDateList.size(); i++) {
 				sheet.getRow(titleDateRow).createCell(i);

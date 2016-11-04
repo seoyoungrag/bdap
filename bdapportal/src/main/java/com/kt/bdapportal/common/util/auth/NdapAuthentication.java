@@ -1,19 +1,26 @@
 package com.kt.bdapportal.common.util.auth;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.BufferingClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+
+import com.kt.bdapportal.common.LoggingRequestInterceptor;
+import com.kt.bdapportal.common.ResErrorHandler;
 
 import net.sf.json.JSONException;
 
@@ -48,7 +55,15 @@ public class NdapAuthentication {
 			apiPass = props.getProperty(apiPass);
 			apiId = props.getProperty(apiId);
 		}
+		
 		restTemplate = new RestTemplate();
+		ClientHttpRequestInterceptor ri = new LoggingRequestInterceptor();
+		List<ClientHttpRequestInterceptor> ris = new ArrayList<ClientHttpRequestInterceptor>();
+		ris.add(ri);
+		restTemplate.setInterceptors(ris);
+		restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
+		restTemplate.setErrorHandler(new ResErrorHandler());
+
 		headers = new HttpHeaders();
 		headers.add("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -82,32 +97,30 @@ public class NdapAuthentication {
 	}
 
 	public NdapAuthentication(String id, String pw) {
-		initialize();
+/*		initialize();
 		this.userId = id;
 		JSONObject requestJson = new JSONObject();
 		try {
-			try {
-				requestJson.put("applicationKey", apiAppKey);
-				requestJson.put("password", pw);
-				requestJson.put("userName", id);
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-			HttpEntity<String> httpEntity = new HttpEntity<String>(requestJson.toString(), headers);
-
-			String formattedAuthApiUrl = MessageFormat.format(apiAuthUrl, ndapDomain);
-
-			ResponseEntity<NdapLoginToken> response = restTemplate.exchange(formattedAuthApiUrl, HttpMethod.POST,
-					httpEntity, NdapLoginToken.class);
-
-			if (response.getStatusCode() == HttpStatus.OK) {
-				NdapLoginToken token = (NdapLoginToken) response.getBody();
-				this.authKey = token.getLoginToken();
-			} else {
-			}
-		} catch (Exception e) {
-
+			requestJson.put("applicationKey", apiAppKey);
+			requestJson.put("password", pw);
+			requestJson.put("userName", id);
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
+		HttpEntity<String> httpEntity = new HttpEntity<String>(requestJson.toString(), headers);
+
+		String formattedAuthApiUrl = MessageFormat.format(apiAuthUrl, ndapDomain);
+
+		ResponseEntity<NdapLoginToken> response = restTemplate.exchange(formattedAuthApiUrl, HttpMethod.POST,
+				httpEntity, NdapLoginToken.class);
+
+		if (response.getStatusCode() == HttpStatus.OK) {
+			NdapLoginToken token = (NdapLoginToken) response.getBody();
+			this.authKey = token.getLoginToken();
+		} else {
+		}
+		//TODO 테스트용
+*/		
 		this.authKey = "temptoken";
 
 	}
@@ -131,11 +144,12 @@ public class NdapAuthentication {
 
 	public static NdapAuthentication getPrivateAuthInstance() {
 		if (privateAuthentication == null) {
-			//init 이후에 null 이므로 ndap내의 사용자  세션이 유효하지 않게 된 것 null을 리턴?
+			// init 이후에 null 이므로 ndap내의 사용자 세션이 유효하지 않게 된 것 null을 리턴?
 			privateAuthentication = new NdapAuthentication();
 		}
 		return privateAuthentication;
 	}
+
 	public String getAuthKey() {
 		return authKey;
 	}
@@ -143,5 +157,5 @@ public class NdapAuthentication {
 	public String getUserId() {
 		return userId;
 	}
-	
+
 }

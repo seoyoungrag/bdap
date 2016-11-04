@@ -29,6 +29,7 @@ import com.kt.bdapportal.common.util.SearchVO;
 import com.kt.bdapportal.domain.BdapBbs;
 import com.kt.bdapportal.domain.BdapComment;
 import com.kt.bdapportal.domain.BdapFile;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.service.BbsService;
 import com.kt.bdapportal.service.CommentService;
 import com.kt.bdapportal.service.FileService;
@@ -148,7 +149,7 @@ public class BbsController {
 				jsonObj1.put("emer", bbs.getBbsEmergencyYn());
 				jsonObj1.put("writer", bbs.getBbsWriterNm());
 				jsonObj1.put("noticeId", bbs.getBbsId());
-				jsonObj1.put("regDate", bbs.getBbsRegDt());
+				jsonObj1.put("regDate", bbs.getFormatBbsRegDt());
 				jsonObj1.put("userId", bbs.getBbsWriterId());
 				if(bbs.getBbsParentBbsId() == null){
 					jsonObj1.put("parentId", "");						
@@ -179,9 +180,7 @@ public class BbsController {
 				
 		try {
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String userNm = (String)session.getAttribute("USER_NM");
-			String userMail = (String)session.getAttribute("USER_MAIL");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			
 			request.setCharacterEncoding("UTF-8");
 			
@@ -214,17 +213,17 @@ public class BbsController {
 			bdapBbs.setBbsEmergencyYn(yn);
 			bdapBbs.setBbsContent(content);
 			bdapBbs.setBbsHit(0);
-			bdapBbs.setBbsWriterId(userId);
-			bdapBbs.setBbsWriterEmail(userMail);
-			bdapBbs.setBbsWriterNm(userNm);
+			bdapBbs.setBbsWriterId(bdapUser.getUserId());
+			bdapBbs.setBbsWriterEmail(bdapUser.getUserEmail());
+			bdapBbs.setBbsWriterNm(bdapUser.getUserNm());
 			bdapBbs.setBbsCategorySub(categorySub);
 			
 			bdapBbs = bbsService.noticeInsert(bdapBbs);
 			
 			if(!fileListArr.equals("")){
 				String[] fileList = fileListArr.split("\\*");
-				if(fileList.length != 0){
-					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+				if(fileList.length != 0 && fileListArr.contains("*")){
+					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 					String filePath = BbsConstant.FILE_STORE_PATH+File.separator;
 					
 					File directory = new File(filePath);
@@ -273,13 +272,13 @@ public class BbsController {
 	
 	
 	@RequestMapping("/notice/view.do")							
-	public ModelAndView notificationView(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public ModelAndView notificationView(HttpServletRequest request, HttpServletResponse response)  {
 				
 		ModelAndView mav = new ModelAndView("/view/noticeView");
 		
 		try{
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			
 			String bbsPostId = (String)request.getParameter("bbsPostId");
 			BdapBbs bbs = bbsService.getBbsbyId(bbsPostId);
@@ -288,7 +287,7 @@ public class BbsController {
 			bbs.setBbsHit(++hit);
 			bbs = bbsService.noticeInsert(bbs);
 			
- 	        String fileName = "";
+			StringBuffer fileName = new StringBuffer();
  	       
  	        List<BdapComment> bdapCmtList = commentService.getCommentList(bbsPostId);
  	        long cmtCount = commentService.countByCmtParentBbsId(bbsPostId); 
@@ -296,7 +295,7 @@ public class BbsController {
 			
  	        if(bdapFileList.size() > 0){
  	        	String fileStorePath = BbsConstant.FILE_STORE_PATH+File.separator;
- 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+ 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator + bbs.getBbsWriterId();
  				
  				File directory = new File(fileTempPath);
  		        if(directory.exists() == false){
@@ -320,14 +319,14 @@ public class BbsController {
 					outputStream.close();
 					inputStream.close();
  					
- 					fileName += bdapFile.getFleDisplayNm()+"*"; 
+					fileName.append(bdapFile.getFleDisplayNm()).append("*");
  				}
  	        	
  	        }
  	       
  	        mav.addObject("cmtCount", cmtCount);
  	       	mav.addObject("bdapCmtList", bdapCmtList);
-			mav.addObject("fileName", fileName);
+			mav.addObject("fileName", fileName.toString());
 			mav.addObject("bbsPostId", bbsPostId);
 			mav.addObject("title", bbs.getBbsTitle());
 			mav.addObject("systemName", bbs.getBbsCategory());
@@ -357,14 +356,14 @@ public class BbsController {
 			String bbsPostId = (String)request.getParameter("bbsPostId");
 			BdapBbs bdapBbs = bbsService.getBbsbyId(bbsPostId);
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String fileName = "";
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
+			StringBuffer fileName = new StringBuffer();
 		       
 	        List<BdapFile> bdapFileList =  fileService.getFileListbyParentId(bbsPostId);
 		
 	        if(bdapFileList.size() > 0){
 	        	String fileStorePath = BbsConstant.FILE_STORE_PATH+File.separator;
-				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 				
 				File directory = new File(fileTempPath);
 		        if(directory.exists() == false){
@@ -388,11 +387,11 @@ public class BbsController {
 					outputStream.close();
 					inputStream.close();
 					
-					fileName += bdapFile.getFleDisplayNm()+"*"; 
+					fileName.append(bdapFile.getFleDisplayNm()).append("*");
 				}
 	        	
 	        }
-	        mav.addObject("fileName", fileName);
+	        mav.addObject("fileName", fileName.toString());
 			mav.addObject("bbsPostId",bbsPostId);
 			mav.addObject("bdapBbs",bdapBbs);
 	
@@ -434,8 +433,7 @@ public class BbsController {
 	public String noticeUpdate(HttpServletRequest request, HttpServletResponse response) {
 		try{
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String userMail = (String)session.getAttribute("USER_MAIL");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			request.setCharacterEncoding("UTF-8");
 			
 			String title = (String)request.getParameter("title");
@@ -468,7 +466,7 @@ public class BbsController {
 			bdapBbs.setBbsDeletedYn('N');
 			bdapBbs.setBbsEmergencyYn(yn);
 			bdapBbs.setBbsContent(content);
-			bdapBbs.setBbsWriterEmail(userMail);
+			bdapBbs.setBbsWriterEmail(bdapUser.getUserEmail());
 			bdapBbs.setBbsCategorySub(categorySub);
 			
 			bbsService.noticeInsert(bdapBbs);
@@ -487,7 +485,7 @@ public class BbsController {
 				
 				if(fileListArr.contains("*")){
 					
-					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 					String filePath = BbsConstant.FILE_STORE_PATH+File.separator;
 					
 					File directory = new File(filePath);
@@ -539,9 +537,7 @@ public class BbsController {
 
 				HttpSession session = request.getSession();
 				
-				String userId = (String)session.getAttribute("USER_ID");
-				String userNm = (String)session.getAttribute("USER_NM");
-				String userMail = (String)session.getAttribute("USER_MAIL");
+				BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 				request.setCharacterEncoding("UTF-8");
 				
 				String title = (String)request.getParameter("replyTitle");
@@ -564,9 +560,9 @@ public class BbsController {
 				bdapBbs.setBbsParentBbsId(parentPostId);
 				bdapBbs.setBbsContent(content);
 				bdapBbs.setBbsHit(0);
-				bdapBbs.setBbsWriterId(userId);
-				bdapBbs.setBbsWriterEmail(userMail);
-				bdapBbs.setBbsWriterNm(userNm);
+				bdapBbs.setBbsWriterId(bdapUser.getUserId());
+				bdapBbs.setBbsWriterEmail(bdapUser.getUserEmail());
+				bdapBbs.setBbsWriterNm(bdapUser.getUserNm());
 				
 				bdapBbs = bbsService.noticeInsert(bdapBbs);
 				
@@ -575,7 +571,7 @@ public class BbsController {
 				if(!fileListArr.equals("")){
 					if(fileList.length != 0 && fileListArr.contains("*")){
 						
-						String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+						String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 						String filePath = BbsConstant.FILE_STORE_PATH+File.separator;
 						
 						File directory = new File(filePath);
@@ -627,8 +623,7 @@ public class BbsController {
 			try{
 				
 				HttpSession session = request.getSession();
-				String userId = (String)session.getAttribute("USER_ID");
-				String userMail = (String)session.getAttribute("USER_MAIL");
+				BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 				request.setCharacterEncoding("UTF-8");
 				
 				String title = (String)request.getParameter("replyTitle");
@@ -650,7 +645,7 @@ public class BbsController {
 				bdapBbs.setBbsModDt(ts);
 				bdapBbs.setBbsDeletedYn('N');
 				bdapBbs.setBbsContent(content);
-				bdapBbs.setBbsWriterEmail(userMail);
+				bdapBbs.setBbsWriterEmail(bdapUser.getUserEmail());
 				
 				bbsService.noticeInsert(bdapBbs);
 			
@@ -667,7 +662,7 @@ public class BbsController {
 							
 				if(fileListArr.contains("*")){
 					
-					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+					String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 					String filePath = BbsConstant.FILE_STORE_PATH+File.separator;
 					
 					File directory = new File(filePath);

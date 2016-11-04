@@ -29,6 +29,7 @@ import com.kt.bdapportal.common.util.SearchVO;
 import com.kt.bdapportal.domain.BdapBbs;
 import com.kt.bdapportal.domain.BdapComment;
 import com.kt.bdapportal.domain.BdapFile;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.service.BbsService;
 import com.kt.bdapportal.service.CommentService;
 import com.kt.bdapportal.service.FileService;
@@ -140,7 +141,7 @@ public class DevreqController {
 				jsonObj1.put("category", bbs.getBbsCategorySub());
 				jsonObj1.put("title", bbs.getBbsTitle());
 				jsonObj1.put("postId", bbs.getBbsId());
-				jsonObj1.put("regDate", bbs.getBbsRegDt().toString());
+				jsonObj1.put("regDate", bbs.getFormatBbsRegDt());
 				jsonObj1.put("writerNm", bbs.getBbsWriterNm());
 				jsonObj1.put("postHit", bbs.getBbsHit());
 				if(bbs.getBbsParentBbsId() == null){
@@ -175,9 +176,7 @@ public class DevreqController {
 		try {
 			HttpSession session = request.getSession();
 			
-			String userId = (String)session.getAttribute("USER_ID");
-			String userNm = (String)session.getAttribute("USER_NM");
-			String userMail = (String)session.getAttribute("USER_MAIL");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			
 			request.setCharacterEncoding("UTF-8");
 			
@@ -202,18 +201,18 @@ public class DevreqController {
 			bdapBbs.setBbsEmergencyYn('N');
 			bdapBbs.setBbsContent(content);
 			bdapBbs.setBbsHit(0);
-			bdapBbs.setBbsWriterId(userId);
-			bdapBbs.setBbsWriterEmail(userMail);
-			bdapBbs.setBbsWriterNm(userNm);
+			bdapBbs.setBbsWriterId(bdapUser.getUserId());
+			bdapBbs.setBbsWriterEmail(bdapUser.getUserEmail());
+			bdapBbs.setBbsWriterNm(bdapUser.getUserNm());
 			bdapBbs.setBbsCategorySub(referenceType);
 			
 			bdapBbs = bbsService.devreqInsert(bdapBbs);
 			
 			String[] fileList = fileListArr.split("\\*");
 			
-			if(fileList.length != 0){
+			if(fileList.length != 0 && fileListArr.contains("*")){
 				
-				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 				String filePath = BbsConstant.FILE_STORE_PATH;
 				
 				File directory = new File(filePath);
@@ -277,14 +276,10 @@ public class DevreqController {
 		ModelAndView mav = new ModelAndView("/view/devreqView");
 		
 		try{
-			
-			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			
 			String bbsPostId = (String)request.getParameter("bbsPostId");
 			
 			BdapBbs bbs = bbsService.getBbsbyId(bbsPostId);
-			String fileName = "";
+			StringBuffer fileName = new StringBuffer();
 	 	       
 			int hit = bbs.getBbsHit();
 			bbs.setBbsHit(++hit);
@@ -295,7 +290,7 @@ public class DevreqController {
 			long cmtCount = commentService.countByCmtParentBbsId(bbsPostId);
  	        if(bdapFileList.size() > 0){
  	        	String fileStorePath = BbsConstant.FILE_STORE_PATH;
- 				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator;
+ 				String fileTempPath = BbsConstant.FILE_TEMP_PATH + File.separator + bbs.getBbsWriterId();;
  				
  				File directory = new File(fileTempPath);
  		        if(directory.exists() == false){
@@ -304,14 +299,6 @@ public class DevreqController {
  		       for(int i = 0; i < bdapFileList.size(); i++){
  					BdapFile bdapFile = bdapFileList.get(i);
  					
- 					/*FileInputStream fis = new FileInputStream(fileStorePath + File.separator + bdapFile.getFleStroNm());
- 					FileOutputStream fos = new FileOutputStream(fileTempPath + File.separator + bdapFile.getFleDisplayNm());
- 					int data = 0;
- 					while((data=fis.read())!=-1) {
- 						fos.write(data);
- 					}
- 					fis.close();
- 					fos.close();*/
  					FileInputStream inputStream = new FileInputStream(fileStorePath + File.separator + bdapFile.getFleStroNm());        
 					FileOutputStream outputStream = new FileOutputStream(fileTempPath + File.separator + bdapFile.getFleDisplayNm());
 					  
@@ -327,14 +314,14 @@ public class DevreqController {
 					outputStream.close();
 					inputStream.close();
 					
- 					fileName += bdapFile.getFleDisplayNm()+"*"; 
+					fileName.append(bdapFile.getFleDisplayNm()).append("*");
  				}
  	        	
  	        }
  	       
  	        mav.addObject("cmtCount", cmtCount);
  	        mav.addObject("bdapCmtList", bdapCmtList);
-			mav.addObject("fileName", fileName);
+ 	        mav.addObject("fileName", fileName.toString());
 			mav.addObject("bbsPostId", bbsPostId);
 			mav.addObject("title", bbs.getBbsTitle());
 			mav.addObject("systemName", bbs.getBbsCategory());
@@ -372,14 +359,14 @@ public class DevreqController {
 			String bbsPostId = (String)request.getParameter("bbsPostId");
 			BdapBbs bdapBbs = bbsService.getBbsbyId(bbsPostId);
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String fileName = "";
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
+			StringBuffer fileName = new StringBuffer();
 		       
 	        List<BdapFile> bdapFileList =  fileService.getFileListbyParentId(bbsPostId);
 		
 	        if(bdapFileList.size() > 0){
 	        	String fileStorePath = BbsConstant.FILE_STORE_PATH;
-				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 				
 				File directory = new File(fileTempPath);
 		        if(directory.exists() == false){
@@ -411,11 +398,11 @@ public class DevreqController {
 					outputStream.close();
 					inputStream.close();
 					
-					fileName += bdapFile.getFleDisplayNm()+"*"; 
+					fileName.append(bdapFile.getFleDisplayNm()).append("*");
 				}
 	        	
 	        }
-	        mav.addObject("fileName", fileName);
+	        mav.addObject("fileName", fileName.toString());
 			mav.addObject("bbsPostId",bbsPostId);
 			mav.addObject("devreqView",bdapBbs);
 	
@@ -460,8 +447,7 @@ public class DevreqController {
 		try{
 			
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
-			String userMail = (String)session.getAttribute("USER_MAIL");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			request.setCharacterEncoding("UTF-8");
 			
 			String title = (String)request.getParameter("title");
@@ -486,7 +472,7 @@ public class DevreqController {
 			bdapBbs.setBbsDeletedYn('N');
 			bdapBbs.setBbsEmergencyYn('N');
 			bdapBbs.setBbsContent(content);
-			bdapBbs.setBbsWriterEmail(userMail);			
+			bdapBbs.setBbsWriterEmail(bdapUser.getUserEmail());			
 			bdapBbs.setBbsCategorySub(categorySub);
 			
 			bbsService.devreqInsert(bdapBbs);
@@ -504,7 +490,7 @@ public class DevreqController {
 						
 			if(fileListArr.contains("*")){
 				
-				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+userId;
+				String fileTempPath = BbsConstant.FILE_TEMP_PATH+File.separator+bdapUser.getUserId();
 				String filePath = BbsConstant.FILE_STORE_PATH;
 				
 				File directory = new File(filePath);

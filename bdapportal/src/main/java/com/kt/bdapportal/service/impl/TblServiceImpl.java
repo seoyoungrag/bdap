@@ -1,5 +1,6 @@
 package com.kt.bdapportal.service.impl;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,12 +23,20 @@ public class TblServiceImpl implements TblService {
 		List<BdapTbl> bdapTbl = tblRepository.expirationDateNearTable(userId);
 
 		return bdapTbl;
-	}
+	} 
 
-	public BdapTbl getSchema(SearchVO searchVO, String tblId, int startNum, int rows) {
+	public BdapTbl getSchema(String tblId) {
 
 		BdapTbl bdapTbl = new BdapTbl();
-		bdapTbl = tblRepository.schema(tblId, startNum, rows);
+		bdapTbl = tblRepository.schema(tblId);
+
+		return bdapTbl;
+	}
+
+	public BdapTbl getSchemaListByTblId(SearchVO searchVO, String tblId) {
+
+		BdapTbl bdapTbl = new BdapTbl();
+		bdapTbl = tblRepository.getSchemaListByTblId(tblId);
 
 		return bdapTbl;
 	}
@@ -67,6 +76,19 @@ public class TblServiceImpl implements TblService {
 		return bdapTbl;
 	}
 
+	public BdapTbl getSchemaByTblNm(String userId, SearchVO searchVo) {
+
+		BdapTbl bdapTbl = new BdapTbl();
+
+		if (searchVo.getSearchType().equals("tblKorNm")) {
+			bdapTbl = tblRepository.schemaByTblKorNm(userId, searchVo.getSearchWord());
+		} else if (searchVo.getSearchType().equals("tblEngNm")) {
+			bdapTbl = tblRepository.schemaByTblEngNm(userId, searchVo.getSearchWord());
+		}
+
+		return bdapTbl;
+	}
+	
 	public List<BdapTbl> getTableList(String schema) {
 
 		List<BdapTbl> bdapTbl = new ArrayList<BdapTbl>();
@@ -77,10 +99,9 @@ public class TblServiceImpl implements TblService {
 
 	}
 
-	public List<BdapTbl> getUserTableList(String userId, String schema) {
-
+	public List<BdapTbl> getUserTableList(SearchVO searchVO) {
 		List<BdapTbl> bdapTbl = new ArrayList<BdapTbl>();
-		bdapTbl = tblRepository.userTblList(userId, schema);
+		bdapTbl = tblRepository.userTblList(searchVO);
 		return bdapTbl;
 	}
 
@@ -118,18 +139,49 @@ public class TblServiceImpl implements TblService {
 	@Override
 	public BdapTbl updateCellTblInfo(String id, String cellName, String cellValue) {
 		BdapTbl bdapTbl = tblRepository.findByTblId(id);
-		cellValue = cellValue.toLowerCase();
+		String localCellValue = cellValue.toLowerCase();
 		if (cellName.equals("tblKorNm")) {
-			bdapTbl.setTblKorNm(cellValue);
+			bdapTbl.setTblKorNm(localCellValue);
 		} else if (cellName.equals("isManaged")) {
-			bdapTbl.setTblIsManaged(cellValue.charAt(0));
+			bdapTbl.setTblIsManaged(localCellValue.charAt(0));
+			bdapTbl.setTblStackType("2");
+			try{
+				java.util.Date insertDate = new java.text.SimpleDateFormat("yyyy-MM-dd").parse("9999-12-31");	
+				bdapTbl.setTblValidateDate(insertDate);
+			}catch(ParseException e){
+				e.printStackTrace();
+			}
 		} else if (cellName.equals("isCheckNull")) {
-			bdapTbl.setTblIsChkNull(cellValue.charAt(0));
+			bdapTbl.setTblIsChkNull(localCellValue.charAt(0));
 		} else if (cellName.equals("isCehckRegex")) {
-			bdapTbl.setTblIsChkType(cellValue.charAt(0));
+			bdapTbl.setTblIsChkType(localCellValue.charAt(0));
 		}
 		return tblRepository.saveAndFlush(bdapTbl);
+	}
+	
+	public List<String> getSchemaList(boolean isAdmin, String userId){
+		List<String> bdapTbl = new ArrayList<String>();
+		if(isAdmin){
+			bdapTbl = tblRepository.getSchemaListForAdmin();
+		}else{
+			bdapTbl = tblRepository.getSchemaListForUser(userId);
+		}
+		
+		return bdapTbl; 
+	}
 
+	@Override
+	public List<BdapTbl> getTblListByTblNm(SearchVO searchVO, int startNum, int rows) {
+
+		List<BdapTbl> bdapTblList = new ArrayList<BdapTbl>();
+
+		if (searchVO.getSearchType().equals("tblKorNm")) {
+			bdapTblList = tblRepository.getBdapTblByTblKorNmIgnoreCaseContaining(searchVO.getSearchWord());
+		} else if (searchVO.getSearchType().equals("tblEngNm")) {
+			bdapTblList = tblRepository.getBdapTblByTblEngNmIgnoreCaseContaining(searchVO.getSearchWord());
+		}
+
+		return bdapTblList;
 	}
 
 }

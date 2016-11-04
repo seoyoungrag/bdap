@@ -4,16 +4,20 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.kt.bdapportal.common.util.SearchVO;
 import com.kt.bdapportal.domain.MgmtUserTblStat;
 
 @Repository("mgmtUserTblStatRepository")
 public interface MgmtUserTblStatRepository extends JpaRepository<MgmtUserTblStat, String>{
 
 	
-	@Query(value="SELECT sum(B.TBL_SIZE) AS TBL_SIZE, B.* FROM BDAP_TBL A, MGMT_USER_TBL_STAT B WHERE A.TBL_DB_NM=B.DB_NAME AND A.TBL_ENG_NM=B.TBL_NAME AND A.TBL_IS_MANAGED='N' LIMIT 0,1", nativeQuery = true)
-	public MgmtUserTblStat userAreaUsage(); 
+	@Query(value="SELECT ifnull(sum(B.TBL_SIZE),0) AS TBL_SIZE, B.* FROM BDAP_TBL A, MGMT_USER_TBL_STAT B WHERE A.TBL_DB_NM=B.DB_NAME AND A.TBL_ENG_NM=B.TBL_NAME AND A.TBL_IS_MANAGED='N' LIMIT 0,1", nativeQuery = true)
+	public MgmtUserTblStat userAreaUsage();
+	@Query(value="SELECT ifnull(sum(B.TBL_SIZE),0) AS TBL_SIZE, B.* FROM BDAP_TBL A, MGMT_USER_TBL_STAT B WHERE A.TBL_DB_NM=B.DB_NAME AND A.TBL_ENG_NM=B.TBL_NAME AND A.TBL_IS_MANAGED='Y' LIMIT 0,1", nativeQuery = true)
+	public MgmtUserTblStat managedAreaUsage(); 
 	
 	@Query(value="SELECT SUM(TBL_SIZE) FROM MGMT_USER_TBL_STAT WHERE OWNER_NAME=?1 GROUP BY DATE_FORMAT(INSERT_DT,'%Y%m%d') order by INSERT_DT limit 0,1", nativeQuery = true)
 	public Long usage(String userId);
@@ -27,6 +31,7 @@ public interface MgmtUserTblStatRepository extends JpaRepository<MgmtUserTblStat
 			+ "GROUP BY DATE_FORMAT(A.INSERT_DT,'%Y%m%d'),OWNER_NAME ORDER BY A.INSERT_DT DESC", nativeQuery = true)
 	public List<MgmtUserTblStat> userUsage();
 
+	@Deprecated
 	@Query(value="SELECT "
 				+ "CURRENT_TIMESTAMP as INSERT_DT, "
 				+ "OWNER_NAME,(SELECT USER_NM FROM bdapportal.BDAP_USER C WHERE C.USER_ID=B.OWNER_NAME) as USER_TBL_STAT_ID, "
@@ -43,10 +48,43 @@ public interface MgmtUserTblStatRepository extends JpaRepository<MgmtUserTblStat
 				+ ") B ", nativeQuery = true)
 	public List<MgmtUserTblStat> userUsageSearch(String searchStartDate, String searchEndDate);
 	
-	
-	
-	
-	
-	
+	@Query(value="SELECT "
+				+ "CURRENT_TIMESTAMP as INSERT_DT, "
+				+ "OWNER_NAME,"
+				+ "ifnull((SELECT USER_NM FROM bdapportal.BDAP_USER C WHERE C.USER_ID=B.OWNER_NAME),'') as USER_TBL_STAT_ID, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(B.seleted_date,'%Y/%m/%d')) as TBL_TYPE, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(date_SUB(B.seleted_date, INTERVAL 1 DAY),'%Y/%m/%d')) as TBL_SIZE, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(date_SUB(B.seleted_date, INTERVAL 2 DAY),'%Y/%m/%d')) as DB_NAME, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(date_SUB(B.seleted_date, INTERVAL 3 DAY),'%Y/%m/%d')) as TBL_NAME "
+				+ "from "
+				+ "( "
+				+ "  select USER_ID AS OWNER_NAME, STR_TO_DATE(:#{#searchVO.endDate},'%Y/%m/%d') as seleted_date from " 
+				+ "  bdapportal.BDAP_USER     "
+				+ ") B "
+				+ " ORDER BY OWNER_NAME DESC LIMIT :#{#searchVO.startNum}, :#{#searchVO.rows}", nativeQuery = true)
+	public List<MgmtUserTblStat> userUsageSearch(@Param("searchVO")SearchVO searchVO);
+
+	@Query(value="SELECT "
+			+ "count(*) "
+			+ "from " 
+			+ "  bdapportal.BDAP_USER     "
+			, nativeQuery = true)
+	public Long userUsageSearchCount();
+
+	@Query(value="SELECT "
+				+ "CURRENT_TIMESTAMP as INSERT_DT, "
+				+ "OWNER_NAME,"
+				+ "ifnull((SELECT USER_NM FROM bdapportal.BDAP_USER C WHERE C.USER_ID=B.OWNER_NAME),'') as USER_TBL_STAT_ID, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(B.seleted_date,'%Y/%m/%d')) as TBL_TYPE, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(date_SUB(B.seleted_date, INTERVAL 1 DAY),'%Y/%m/%d')) as TBL_SIZE, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(date_SUB(B.seleted_date, INTERVAL 2 DAY),'%Y/%m/%d')) as DB_NAME, "
+				+ "(select ifnull(sum(TBL_SIZE),0) from bdapportal.MGMT_USER_TBL_STAT where OWNER_NAME = B.OWNER_NAME and DATE_FORMAT(DATE(INSERT_DT),'%Y/%m/%d') = DATE_FORMAT(date_SUB(B.seleted_date, INTERVAL 3 DAY),'%Y/%m/%d')) as TBL_NAME "
+				+ "from "
+				+ "( "
+				+ "  select USER_ID AS OWNER_NAME, STR_TO_DATE(:#{#searchVO.endDate},'%Y/%m/%d') as seleted_date from " 
+				+ "  bdapportal.BDAP_USER     "
+				+ ") B "
+				+ " ORDER BY OWNER_NAME DESC ", nativeQuery = true)
+	public List<MgmtUserTblStat> userUsageSearchAll(@Param("searchVO")SearchVO searchVO);
 	
 }

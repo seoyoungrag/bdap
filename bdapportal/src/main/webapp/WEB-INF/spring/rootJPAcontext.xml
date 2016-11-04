@@ -8,26 +8,11 @@
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
 
 
-	<bean id="multipartResolver"
-		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-		<property name="maxUploadSize">
-			<value>10000000</value>
-		</property>
-		<property name="uploadTempDir" ref="uploadDirResource" />
-	</bean>
-
-	<bean id="uploadDirResource" class="org.springframework.core.io.FileSystemResource">
-		<constructor-arg>
-			<value>c:/file/upload/</value>
-		</constructor-arg>
-	</bean>
-
-
 	<bean id="dataSource"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
-		<!-- <property name="url" value="jdbc:mysql://221.153.113.241:3306/bdapportal" /> -->
-		<property name="url" value="jdbc:mysql://localhost:3306/bdapportal" />
+		 <!-- <property name="url" value="jdbc:mysql://221.153.113.56:3306/bdapportal" /> --> 
+		<property name="url" value="jdbc:mysql://localhost:3306/bdapportal?useSSL=false" />
 		<property name="username" value="bdapuser" />
 		<property name="password" value="bdappass" />
 	</bean>
@@ -35,7 +20,7 @@
 
 	<bean id="hibernateJpaVendorAdapter"
 		class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-		<property name="showSql" value="true" />
+		<property name="showSql" value="false" />
 	</bean>
 
 	<bean id="entityManagerFactory"

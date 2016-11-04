@@ -1,3 +1,4 @@
+<%@page import="com.kt.bdapportal.domain.BdapUser"%>
 <%@ page language="java" contentType="text/html; charset=utf-8"
     pageEncoding="utf-8"%>
 <%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
@@ -12,6 +13,8 @@
 <%@page import="com.kt.bdapportal.common.util.BbsConstant"%>
  
 <%
+BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
+boolean isAdmin = (Boolean)session.getAttribute("isAdmin");
 String fileTempPath = BbsConstant.FILE_TEMP_PATH;
 String fileStorePath = BbsConstant.FILE_STORE_PATH;
   BdapBbs bbs = (BdapBbs)request.getAttribute("referenceView");
@@ -135,7 +138,7 @@ String fileStorePath = BbsConstant.FILE_STORE_PATH;
 									<div style="left: -100000px; position: absolute; opacity: 0;" contenteditable="true"><br></div><div class="inline-editor note-air-editor note-editable panel-body" id="note-editor-1" contenteditable="false">
 									<%String[]  fileNameArr = fileName.split("\\*");
 										for(int i = 0;i < fileNameArr.length; i++ ){ %>
-											<form class="" action="../fileDownload?fileName=<%=fileNameArr[i]%>" method="post" >
+											<form class="" action="../fileDownload?fileName=<%=fileNameArr[i]%>&userId=<%=bbs.getBbsWriterId()%>" method="post" >
 											<div class="col-md-6">
 												<div class="col-md-6">
 	                                				<p><%= fileNameArr[i] %></p>
@@ -157,8 +160,11 @@ String fileStorePath = BbsConstant.FILE_STORE_PATH;
 									<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="margin-top:-10px;" onclick="javascript:goReply();">답글</button>
 								<%} %>
 								
+								<%if(isAdmin){ %>
 								<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="margin-top:-10px;" onclick="javascript:goMod();">수정</button>
 								<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="margin-top:-10px;" onclick="javascript:goDelete();">삭제</button>
+								<%} %>
+							
 							</div>
 							<div class="col-sm-12" style="border:1px solid #b3b3b3; margin-bottom:20px;">
 							</div>	
@@ -190,9 +196,11 @@ String fileStorePath = BbsConstant.FILE_STORE_PATH;
 												<div class="col-sm-2 text-right" style="">
 												</div>
 										    	<div class="col-sm-2 text-right" style="margin-top:12px;">
-													<button class="btn-sm btn-inverse waves-effect waves-light inline" id="" type="button" value="<%=bdapCmtList.get(i).getCmtId()%>" onclick="javascript:commentMod(this);">수정</button>
-													<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="" value="<%=bdapCmtList.get(i).getCmtId()%>" onclick="javascript:commentDel(this);">삭제</button>
-												</div>
+													<%if(bdapCmtList.get(i).getCmtWriterId().equals(bdapUser.getUserId()) || isAdmin){%>
+										    			<button class="btn-sm btn-inverse waves-effect waves-light inline" id="" type="button" value="<%=bdapCmtList.get(i).getCmtId()%>" onclick="javascript:commentMod(this);">수정</button>
+														<button class="btn-sm btn-inverse waves-effect waves-light inline" type="button" style="" value="<%=bdapCmtList.get(i).getCmtId()%>" onclick="javascript:commentDel(this);">삭제</button>
+										    		<%} %>
+										    	</div>
 											</div>
 										<%} %>
 								<%} %>
@@ -413,14 +421,6 @@ String fileStorePath = BbsConstant.FILE_STORE_PATH;
     			   return radioHtml;
     		}
     		
-    		
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "";
-    	    	 checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>";
-    	         return checkResult;
-
-    	    }
-    	    
     	    $(function () {
     	        $('#datetimepicker6').datetimepicker({
     	        	format: 'YYYY/MM/DD'

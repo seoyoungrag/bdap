@@ -1,5 +1,6 @@
 package com.kt.bdapportal.common.util;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -35,7 +36,7 @@ public final class DateUtil {
 		return targetCal.getTimeInMillis();
 		
 	}
-	public static String getDateDay(String date, String dateType) throws Exception {
+	public static String getDateDay(String date, String dateType) throws ParseException {
 	    String day = "" ;
 	    SimpleDateFormat dateFormat = new SimpleDateFormat(dateType) ;
 	    Date nDate = dateFormat.parse(date) ;
@@ -64,6 +65,8 @@ public final class DateUtil {
 	        case 7:
 	            day = "토요일";
 	            break ;
+	        default : 
+	        	day = "";
 	    }
 	    return day ;
 	}

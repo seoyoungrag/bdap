@@ -24,6 +24,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
+import com.kt.bdapportal.domain.BdapUser;
+
 public class FileHandler extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private final String TEMP_DIRECTORY = BbsConstant.FILE_TEMP_PATH;
@@ -45,7 +47,7 @@ public class FileHandler extends HttpServlet {
     	
     	String reqUrl = request.getRequestURL().toString();
     	HttpSession session = request.getSession();
-   	 	String userId = (String)session.getAttribute("USER_ID");
+    	BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
    	 	
     	if(reqUrl.contains("fileUpload")){
 		     if(ServletFileUpload.isMultipartContent(request)){ 
@@ -56,11 +58,11 @@ public class FileHandler extends HttpServlet {
 		             for(FileItem item : multiparts){ 
 		                 if(!item.isFormField()){ 
 		                     String name = new File(item.getName()).getName(); 
-		                     File directory = new File(TEMP_DIRECTORY+File.separator+userId);
+		                     File directory = new File(TEMP_DIRECTORY+File.separator+bdapUser.getUserId());
 		         	        if(directory.exists() == false){
 		         	        	directory.mkdirs();
 		         	        }  
-		         	       item.write( new File(TEMP_DIRECTORY+File.separator+userId+ File.separator + name));
+		         	       item.write( new File(TEMP_DIRECTORY+File.separator+bdapUser.getUserId()+ File.separator + name));
 		                 } 
 		             } 
 		            request.setAttribute("message", "File Uploaded Successfully"); 
@@ -72,35 +74,33 @@ public class FileHandler extends HttpServlet {
 		     } 
 		//     request.getRequestDispatcher("/noticeList.do").forward(request, response); 
     	}else if(reqUrl.contains("fileDownload")){
-    		
     		String fileName = (String)request.getParameter("fileName");
+    		String userId = (String)request.getParameter("userId");
+    		
     		String[] fileNameArr = fileName.split("\\*");
 			try {
 				
-				if(fileNameArr.length > 1){				//������ �ϳ� �̻��ϰ�� �����Ѵ�.
-					  
-					  String zipFileName = URLEncoder.encode(fileNameArr[0].split("\\.")[0],"UTF-8");
-					  zipFileName = zipFileName.replaceAll("\\+", "%20"); 
-					  
+				if(fileNameArr.length > 1){				
 					  List<File> filelist = new ArrayList<File>();
 					  for(int i = 0; i < fileNameArr.length; i++){
 					    File filess = new File(TEMP_DIRECTORY + File.separator+userId+File.separator+ fileNameArr[i]);
 					    filelist.add(filess);
 					  }
 					   response.setContentType("application/octet-stream;charset=UTF-8");
-		               response.setHeader("Content-Disposition", "attachment; filename=" + zipFileName+".zip" + ";");
+		               response.setHeader("Content-Disposition", "attachment; filename=downloadZip.zip" + ";");
 		               response.setHeader("Pragma", "no-cache;");
 		               response.setHeader("Expires", "-1;");
 		               this.zip(filelist, new BufferedOutputStream(response.getOutputStream()),fileNameArr);
-					
 	    		}else{
-					File downfile = new File(TEMP_DIRECTORY + File.separator+userId+File.separator+ fileName);
+	    			String serverFile = TEMP_DIRECTORY + File.separator+userId+File.separator+ fileNameArr[0];
+	    			
+	    			File downfile = new File(serverFile);
 		    		if(!downfile.exists()) {
 		    		        throw new FileNotFoundException();
 		    		}
 					BufferedInputStream fin = null;
 					BufferedOutputStream fout = null;
-					String serverFile = TEMP_DIRECTORY + File.separator+userId+File.separator+ fileName;
+					
 					String encFileName = java.net.URLEncoder.encode(downfile.getName(), "UTF-8");	
 					encFileName = encFileName.replaceAll("\\+", "%20"); 
 					response.setContentType("application/octet-stream;charset=UTF-8");
@@ -114,7 +114,6 @@ public class FileHandler extends HttpServlet {
 					fout = new BufferedOutputStream(response.getOutputStream());
 					int fread = 0;
 	
-					// ���� �б� �� ����
 					while ((fread = fin.read(buf)) != -1) {
 						fout.write(buf, 0, fread);
 					}
@@ -126,21 +125,10 @@ public class FileHandler extends HttpServlet {
 						fin.close();
 					}
 	    		}
-				
-				
-			
 			} catch (Exception e) {
-				
 				e.printStackTrace();
-				
-			} finally {
-				
-
-    		
-			}
+			} 
     	}
-
-	
     }
 
 	public void zip(List<File> src, BufferedOutputStream os,String[] fileName) throws IOException { 

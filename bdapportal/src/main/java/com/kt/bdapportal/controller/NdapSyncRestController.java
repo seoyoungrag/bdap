@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,8 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.kt.bdapportal.common.util.NdapApiWrapper;
-import com.kt.bdapportal.common.util.auth.NdapAuthentication;
-import com.kt.bdapportal.common.util.auth.NdapUser;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.model.NdapTableEventJson;
 import com.kt.bdapportal.service.impl.NdapSyncRestServiceImpl;
 
@@ -91,9 +91,13 @@ public class NdapSyncRestController {
 			String workflowAllCnt = NdapApiWrapper.getInstance().workflowAllCount();
 			
 			JSONObject jsonObj = new JSONObject();
-			
-			jsonObj.put("workflowAllCnt", workflowAllCnt);
-			
+
+			try{
+				jsonObj.put("workflowAllCnt", workflowAllCnt);
+			}catch(Exception e){ 
+				//TODO local환경에서 테스트 용
+				jsonObj.put("workflowAllCnt", "0");
+			}
 			response.setCharacterEncoding("UTF-8");
 			PrintWriter pw = response.getWriter();
 			pw.print(jsonObj);
@@ -109,14 +113,18 @@ public class NdapSyncRestController {
     @RequestMapping(value = "/ndap/workflowEach", method = RequestMethod.GET)
     @ResponseBody
     public void getNdapWorkflowEach(HttpServletRequest request, HttpServletResponse response) {
+		HttpSession session = request.getSession();
+		BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
     	try {
-    		NdapUser userInfo = NdapApiWrapper.getInstance().userInfo(NdapAuthentication.getPrivateAuthInstance().getUserId());
-			String workflowAllCnt = NdapApiWrapper.getInstance().workflowEachCount(userInfo.getId());
+			String workflowCnt = NdapApiWrapper.getInstance().workflowEachCount(bdapUser.getNdapId());
 			
 			JSONObject jsonObj = new JSONObject();
-			
-			jsonObj.put("workflowAllCnt", workflowAllCnt);
-			
+			try{
+				jsonObj.put("myWorkflowCnt", workflowCnt);
+			}catch(Exception e){ 
+				//TODO local환경에서 테스트 용
+				jsonObj.put("myWorkflowCnt", "0");
+			}
 			response.setCharacterEncoding("UTF-8");
 			PrintWriter pw = response.getWriter();
 			pw.print(jsonObj);

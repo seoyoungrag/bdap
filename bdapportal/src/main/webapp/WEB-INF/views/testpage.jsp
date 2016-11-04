@@ -1637,13 +1637,6 @@
      			});
      		});         
             
-    	    function ItemCheckInfo(cellValue, options, rowObject) {
-    	    	 var checkResult = "25";
-    	    	 /* checkResult = "<img src='C:/Users/sourcream/Desktop/요구사항/image/"+cellValue+"'/>"; */
-    	         return checkResult;
-
-    	    }
-            
             
      	    var diskchart = AmCharts.makeChart( "diskchart", {
     	    	  "type": "pie",

@@ -28,6 +28,14 @@ public class BdapColRepositoryImpl implements BdapColRepositoryCustom {
 			Predicate dbNm = builder.equal(rCol.get("colTblId"), col.getColTblId());
 			predicates.add(dbNm);
 		}
+		if(col.getColDbNm() != null){
+			Predicate dbNm = builder.equal(rCol.get("colDbNm"), col.getColDbNm());
+			predicates.add(dbNm);
+		}
+		if(col.getColTblNm() != null){
+			Predicate dbNm = builder.equal(rCol.get("colTblNm"), col.getColTblNm());
+			predicates.add(dbNm);
+		}
 		if (!predicates.isEmpty()){
 			criteria.where(builder.and(predicates.toArray(new Predicate[predicates.size()])));
 		}

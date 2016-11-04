@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.kt.bdapportal.common.util.ExcelService;
 import com.kt.bdapportal.common.util.SearchVO;
 import com.kt.bdapportal.domain.BdapAcl;
 import com.kt.bdapportal.domain.BdapCol;
@@ -26,6 +28,8 @@ import com.kt.bdapportal.domain.BdapRoleUser;
 import com.kt.bdapportal.domain.BdapTbl;
 import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.domain.BdapUserAcl;
+import com.kt.bdapportal.repository.BdapColRepository;
+import com.kt.bdapportal.repository.TblRepository;
 import com.kt.bdapportal.service.BdapAclService;
 import com.kt.bdapportal.service.BdapColService;
 import com.kt.bdapportal.service.BdapRoleAclService;
@@ -64,6 +68,12 @@ public class SetupController {
 
 	@Autowired
 	private BdapColService colService;
+	
+	@Autowired
+	private TblRepository tblRepository;
+	
+	@Autowired
+	private BdapColRepository colRepository;
 
 	@RequestMapping("/setup.do") // set up
 	public ModelAndView setup(HttpServletRequest request, HttpServletResponse response) {
@@ -425,4 +435,29 @@ public class SetupController {
 		String retVal = colService.updateCellColInfo(id, cellName, cellValue) != null ? "SUCCESS" : "FAIL";
 		return retVal;
 	}
+	
+	@RequestMapping("/uploadExcel.do")							
+	public ModelAndView expirationDateModi(HttpServletRequest request, HttpServletResponse response) {
+		ModelAndView mav = new ModelAndView("uploadExcel");
+		return mav;
+	}
+	
+	@RequestMapping("/importExcel.do")							
+	public ModelAndView importExcel(HttpServletRequest request, HttpServletResponse response) {
+		ModelAndView mav = new ModelAndView("importExcel");
+		int result = 1;
+		ExcelService excelService = new ExcelService(tblRepository, colRepository);
+		
+	    try{
+	    	result = excelService.excelFileUpload(request);
+	    } catch ( RuntimeException e){
+	        e.printStackTrace();
+	    }
+		
+	    mav.addObject("result", result);
+		return mav;
+	}
+	
+	
+	
 }

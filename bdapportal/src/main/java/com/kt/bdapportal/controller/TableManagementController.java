@@ -17,10 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.kt.bdapportal.common.util.SearchVO;
-import com.kt.bdapportal.domain.BdapCrypto;
 import com.kt.bdapportal.domain.BdapTbl;
+import com.kt.bdapportal.domain.BdapUser;
 import com.kt.bdapportal.domain.MgmtTblStat;
-import com.kt.bdapportal.service.BdapCryptoService;
 import com.kt.bdapportal.service.MgmtTblStatService;
 import com.kt.bdapportal.service.TblService;
 
@@ -29,22 +28,17 @@ import net.sf.json.JSONObject;
 
 @Controller
 public class TableManagementController {
-
-	@Autowired
-	private MgmtTblStatService mgmtTblStatService;
-	
-	@Autowired
-	private BdapCryptoService bdapCryptoService;
-	
 	@Autowired
 	private TblService tblService;
 	
 	@RequestMapping("/tableManagementList.do")		
 	public ModelAndView tableManagementList(HttpServletRequest request, HttpServletResponse response, @PageableDefault(sort = { "BBS_REG_DT" }, direction = Direction.DESC, size = 15) Pageable pageable){
-		
 		ModelAndView mav = new ModelAndView("/list/tableManagementList");
-	
-try{
+		try{
+			//관리자롤을 갖고 있는 사용자라면 전체 테이블 리스트를 가져와야 한다.
+			HttpSession session = request.getSession();
+			boolean isAdmin = (Boolean)session.getAttribute("isAdmin"); 
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
 			
 			request.setCharacterEncoding("UTF-8");
 			String searchWord = (String)request.getParameter("schema");				//searchWord
@@ -53,8 +47,8 @@ try{
 			searchVO.setSearchWord(searchWord);										
 			mav.addObject("searchVO", searchVO);								
 			
-			List<MgmtTblStat> mgmtTblStatDbList = mgmtTblStatService.getMgmtTblDbList();
-			mav.addObject("mgmtTblStatDbList", mgmtTblStatDbList);
+			List<String> tblList = tblService.getSchemaList(isAdmin, bdapUser.getUserId());
+			mav.addObject("tblList", tblList);
 			
 		}catch(Exception e){
 			e.printStackTrace();	
@@ -72,7 +66,9 @@ try{
 			
 			request.setCharacterEncoding("UTF-8");
 			HttpSession session = request.getSession();
-			String userId = (String)session.getAttribute("USER_ID");
+			BdapUser bdapUser = (BdapUser)session.getAttribute("bdapUser");
+			//관리자롤을 갖고 있는 사용자라면 전체 테이블 리스트를 가져와야 한다.
+			boolean isAdmin = (Boolean)session.getAttribute("isAdmin"); 
 			
 			JSONObject jsonObj = new JSONObject();
 			int page = Integer.parseInt((String)request.getParameter("page"));
@@ -82,17 +78,15 @@ try{
 			
 			String dbName = (String)request.getParameter("searchWord");
 			SearchVO searchVO = new SearchVO();
+			searchVO.setSearchWord(dbName);		
 			
-			List<MgmtTblStat> mgmtTblStatDbList = new ArrayList<MgmtTblStat>();
-			
-			if(dbName == null || dbName.equals("")){															
-				mgmtTblStatDbList = mgmtTblStatService.getMgmtTblDbList();
-				dbName = mgmtTblStatDbList.get(0).getDbName();
+			if(isAdmin){ // 관리자라면 userId에 공백문자를 넣어준다.
+				searchVO.setUserId("");
+			}else{
+				searchVO.setUserId(bdapUser.getUserId());
 			}
 			
-			searchVO.setSearchWord(dbName);										
-			
-			List<BdapTbl> bdapTblList = tblService.getUserTableList(userId,dbName);
+			List<BdapTbl> bdapTblList = tblService.getUserTableList(searchVO);
 	
 			for(int i = 0; i < bdapTblList.size();i++){
 				BdapTbl bdapTbl = bdapTblList.get(i);
@@ -103,7 +97,7 @@ try{
 				jsonObj1.put("size", bdapTbl.getTblLocation()==null?"0":bdapTbl.getTblLocation()); // int형이지만 강제로 String에 매핑했으므로 null이 있을 수 있다.
 				jsonObj1.put("count", bdapTbl.getTblOwner()==null?"0":bdapTbl.getTblOwner()); // int형이지만 강제로 String에 매핑했으므로 null이 있을 수 있다.
 				jsonObj1.put("tblId", bdapTbl.getTblId());
-				jsonObj1.put("validateDate", bdapTbl.getTblValidateDate().toString().substring(0, 10));
+				jsonObj1.put("validateDate", bdapTbl.getTblValidateDate() == null ? "" : bdapTbl.getTblValidateDate().toString().substring(0, 10));
 				jsonArray.add(jsonObj1);
 			}
 			jsonObj.put("rows", jsonArray);
@@ -122,19 +116,15 @@ try{
 	
 	@RequestMapping("/expirationDateModi.do")							
 	public ModelAndView expirationDateModi(HttpServletRequest request, HttpServletResponse response) {
-				
 		ModelAndView mav = new ModelAndView("expirationDateModi");
-		
 		String tblId= (String)request.getParameter("tblId");
 		
 		BdapTbl bdapTbl = tblService.getBdapTblByTblId(tblId);
 		mav.addObject("tblId", tblId);
-		mav.addObject("validateDate", bdapTbl.getTblValidateDate().toString().substring(0,10));
+		mav.addObject("validateDate", bdapTbl.getTblValidateDate() == null ? "" : bdapTbl.getTblValidateDate().toString().substring(0, 10));
 				
-		
 		return mav;
 	}
-
 	
 	@RequestMapping("/expirationDateUpdate.do")							
 	public void expirationDateUpdate(HttpServletRequest request, HttpServletResponse response) {
@@ -145,8 +135,9 @@ try{
 			String rtnUrl = "tableManagementList.do";
 			BdapTbl bdapTbl = tblService.getBdapTblByTblId(tblId);
 			
-			validateDate = validateDate+" 00:00:00";
-			validateDate = validateDate.replaceAll("\\/", "-");	
+			StringBuffer validDate = new StringBuffer();
+			validDate.append(validateDate).append(" 00:00:00");
+			validateDate = validDate.toString().replaceAll("\\/", "-");	
 			java.util.Date insertDate = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(validateDate);	
 			bdapTbl.setTblValidateDate(insertDate);
 			bdapTbl = tblService.updateValidateDate(bdapTbl);

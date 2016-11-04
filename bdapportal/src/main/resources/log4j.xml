@@ -12,26 +12,32 @@
 	
 	<!-- Application Loggers -->
 	<logger name="com.kt.bdapportal">
-		<level value="info" />
+		<level value="warn" />
 	</logger>
 	
 	<!-- 3rdparty Loggers -->
 	<logger name="org.springframework.core">
-		<level value="info" />
+		<level value="warn" />
 	</logger>
 	
 	<logger name="org.springframework.beans">
-		<level value="info" />
+		<level value="warn" />
 	</logger>
 	
 	<logger name="org.springframework.context">
-		<level value="info" />
+		<level value="warn" />
 	</logger>
 
 	<logger name="org.springframework.web">
-		<level value="info" />
+		<level value="warn" />
 	</logger>
-
+	
+	<logger name="org.springframework.web.client.RestTemplate">
+		<level value="warn" />
+	</logger>
+	<logger name="org.springframework.web.client.ResponseErrorHandler">
+		<level value="warn" />
+	</logger>
 	<!-- Root Logger -->
 	<root>
 		<priority value="warn" />

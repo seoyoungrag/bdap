@@ -171,6 +171,13 @@ public class BbsServiceImpl implements BbsService{
 		
 	}
 	
+	public BdapBbs getQnaBbsbyId(String id){
+		BdapBbs bbs = bbsRepository.getQnaBbsbyId(id);
+		return bbs;
+	}
+	
+	
+	
 	public BdapBbs getQnabyId(String id){
 		
 		BdapBbs bbs = bbsRepository.findOne(id);
